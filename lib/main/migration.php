@@ -108,19 +108,27 @@ final class Migration
 	public static function pickOptions(array $source): array
 	{
 		$picked = [];
+		$canonical = [];
+		foreach(self::OPTIONS as $known)
+		{
+			$canonical[strtolower($known)] = $known;
+		}
 		foreach($source as $name => $value)
 		{
-			// Ядро хранит имена настроек в нижнем регистре: сравниваем без учёта регистра, ключи отдаём строчными
-			$name = strtolower((string)$name);
-			$wanted = in_array($name, array_map('strtolower', self::OPTIONS), true);
+			// Ядро хранит имена настроек строчными: сравниваем без учёта регистра, отдаём канонические
+			$lower = strtolower((string)$name);
+			$key = $canonical[$lower] ?? null;
 			foreach(self::OPTION_PREFIXES as $prefix)
 			{
 				// «ANALYSIS_interval_» без типа — не настройка типа: нужен хотя бы один знак
-				$wanted = $wanted || (str_starts_with($name, strtolower($prefix)) && strlen($name) > strlen($prefix));
+				if($key === null && str_starts_with($lower, strtolower($prefix)) && strlen($lower) > strlen($prefix))
+				{
+					$key = $prefix.substr($lower, strlen($prefix));
+				}
 			}
-			if($wanted)
+			if($key !== null)
 			{
-				$picked[$name] = (string)$value;
+				$picked[$key] = (string)$value;
 			}
 		}
 		ksort($picked);
@@ -416,7 +424,7 @@ final class Migration
 		foreach($wanted as $name => $value)
 		{
 			// Есть своё значение — не трогаем: его могли поправить уже здесь
-			if(!array_key_exists($name, $present))
+			if(!array_key_exists(strtolower($name), $present))
 			{
 				$this->port->setOption(Constants::MODULE_ID, $name, $value);
 				$copied++;
@@ -424,7 +432,7 @@ final class Migration
 		}
 
 		$after = array_change_key_case($this->port->options(Constants::MODULE_ID), CASE_LOWER);
-		$missing = array_values(array_filter(array_keys($wanted), static fn(string $name): bool => !array_key_exists($name, $after)));
+		$missing = array_values(array_filter(array_keys($wanted), static fn(string $name): bool => !array_key_exists(strtolower($name), $after)));
 		if($missing !== [])
 		{
 			return ['ok' => false, 'message' => 'не перенесены: '.implode(', ', $missing), 'had' => true, 'count' => count($wanted)];

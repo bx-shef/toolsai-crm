@@ -1,6 +1,6 @@
 <?php
 /**
- * Робот «AI: оценить сейчас» (1.29.0, #73). Заглушка в
+ * Робот «AI: оценить сейчас» Заглушка в
  * /bitrix/activities/custom/shtoolsaianalyzeactivity/ ведёт сюда (Main\PublicPage).
  */
 if(!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true)
@@ -10,7 +10,7 @@ if(!defined('B_PROLOG_INCLUDED') || B_PROLOG_INCLUDED !== true)
 
 $arActivityDescription = [
 	'NAME' => 'AI: оценить сейчас',
-	'DESCRIPTION' => 'Анализ записи моделью модуля shef.toolsai сразу, не дожидаясь агента: риск, почему, что сделать.',
+	'DESCRIPTION' => 'Анализ записи моделью (модуль shef.toolsaicrm) сразу, не дожидаясь агента: риск, почему, что сделать.',
 	'TYPE' => ['activity', 'robot_activity'],
 	'CLASS' => 'ShToolsAiAnalyzeActivity',
 	'JSCLASS' => 'BizProcActivity',

@@ -116,8 +116,8 @@ $fallback = CallScriptEvents::getFallback();
 ?>
 <div class="shef-tai-card" id="callscripts">
 	<h3 style="margin-top:0">Скрипты оценки звонков <?=$help('section.callscripts')?></h3>
-	<p style="color:#555;max-width:900px">«Штатно» — скрипт к звонку выбирает Битрикс24 по типу клиента и направлению звонка. «По правилам» — модуль закрепляет за звонком скрипт по записи, к которой он привязан: тип записи, воронка, стадия; оценку делает Битрикс24 этим скриптом, тексты и критерии скрипта не меняются. Автопроверку и расписание задаёт сам скрипт: скрипт вне своего расписания (и, при речевой аналитике нового вида, без критериев) не закрепляется — тогда скрипт выбирает Битрикс24. Запись, стадия и расписание скрипта берутся на момент, когда звонок попадает в CRM. Запасной скрипт действует и для звонков без сделки, лида или смарт-процесса. Работает для телефонии Битрикс24; скрипт, выбранный оператором в карточке звонка, остаётся.</p>
-	<?php if(!CallScriptEvents::isSupported()): ?><p style="color:#b00">Подбор скриптов недоступен в этой версии Битрикс24.</p><?php elseif($scripts === []): ?><p style="color:#b00">Включённых скриптов оценки звонков нет или в этом Битрикс24 они недоступны — подбирать нечего.</p><?php endif; ?>
+	<p style="color:var(--tai-text-2);max-width:900px">«Штатно» — скрипт к звонку выбирает Битрикс24 по типу клиента и направлению звонка. «По правилам» — модуль закрепляет за звонком скрипт по записи, к которой он привязан: тип записи, воронка, стадия; оценку делает Битрикс24 этим скриптом, тексты и критерии скрипта не меняются. Автопроверку и расписание задаёт сам скрипт: скрипт вне своего расписания (и, при речевой аналитике нового вида, без критериев) не закрепляется — тогда скрипт выбирает Битрикс24. Запись, стадия и расписание скрипта берутся на момент, когда звонок попадает в CRM. Запасной скрипт действует и для звонков без сделки, лида или смарт-процесса. Работает для телефонии Битрикс24; скрипт, выбранный оператором в карточке звонка, остаётся.</p>
+	<?php if(!CallScriptEvents::isSupported()): ?><p style="color:var(--tai-danger)">Подбор скриптов недоступен в этой версии Битрикс24.</p><?php elseif($scripts === []): ?><p style="color:var(--tai-danger)">Включённых скриптов оценки звонков нет или в этом Битрикс24 они недоступны — подбирать нечего.</p><?php endif; ?>
 	<?php foreach($callScriptErrors ?? [] as $error): $alert((string)$error); endforeach; ?>
 	<form method="post" action="<?=$h($self)?>">
 		<?=bitrix_sessid_post()?>
@@ -151,7 +151,7 @@ $fallback = CallScriptEvents::getFallback();
 		<tbody>
 		<?php foreach(CallScriptRuleTable::getRules() as $rule): ?>
 			<tr class="shef-tai-table-row">
-				<td class="shef-tai-table-cell"><a href="<?=$h($self.'&csedit='.$rule->id.'#callscripts')?>"><?=$h($rulePlaces[$rule->placeKey()] ?? $rule->placeKey())?></a> <span style="color:#777">(<?=(int)$rule->sort?>)</span></td>
+				<td class="shef-tai-table-cell"><a href="<?=$h($self.'&csedit='.$rule->id.'#callscripts')?>"><?=$h($rulePlaces[$rule->placeKey()] ?? $rule->placeKey())?></a> <span style="color:var(--tai-text-3)">(<?=(int)$rule->sort?>)</span></td>
 				<td class="shef-tai-table-cell"><?=$h($rule->stageSemantic !== '' ? $outcomeNames[$rule->stageSemantic] : ($rule->stages === [] ? 'любая' : implode(', ', $rule->stages)))?></td>
 				<td class="shef-tai-table-cell"><?=$h($scripts[$rule->assessmentId] ?? ('#'.$rule->assessmentId.' — выключен или удалён, правило пропускается'))?></td>
 				<td class="shef-tai-table-cell"><?=$rule->enabled ? 'да' : 'нет'?></td>
@@ -194,7 +194,7 @@ $fallback = CallScriptEvents::getFallback();
 		<input type="hidden" name="RULE_ID" value="<?=(int)$ruleEdit->id?>">
 		<table class="shef-tai-form">
 			<tr><td class="shef-tai-l">Включено:</td><td class="shef-tai-r"><input type="checkbox" name="IS_ENABLED" value="Y"<?=$ruleEdit->enabled ? ' checked' : ''?>></td></tr>
-			<tr><td class="shef-tai-l">Сортировка:<br><span style="color:#777">Меньше — главнее среди равных по точности</span></td><td class="shef-tai-r"><input type="text" name="SORT" size="6" value="<?=(int)$ruleEdit->sort?>"></td></tr>
+			<tr><td class="shef-tai-l">Сортировка:<br><span style="color:var(--tai-text-3)">Меньше — главнее среди равных по точности</span></td><td class="shef-tai-r"><input type="text" name="SORT" size="6" value="<?=(int)$ruleEdit->sort?>"></td></tr>
 			<tr><td class="shef-tai-l">Где:</td><td class="shef-tai-r">
 				<select name="PLACE" id="shef-tai-cs-place">
 					<?php foreach($rulePlaces as $key => $name): ?>
@@ -202,7 +202,7 @@ $fallback = CallScriptEvents::getFallback();
 					<?php endforeach; ?>
 				</select>
 			</td></tr>
-			<tr><td class="shef-tai-l">Стадии:<br><span style="color:#777">Ничего не выбрано — любая стадия (несколько — с Ctrl или Cmd). Итог «успех» или «провал» — звонок по закрытой записи.</span></td><td class="shef-tai-r">
+			<tr><td class="shef-tai-l">Стадии:<br><span style="color:var(--tai-text-3)">Ничего не выбрано — любая стадия (несколько — с Ctrl или Cmd). Итог «успех» или «провал» — звонок по закрытой записи.</span></td><td class="shef-tai-r">
 				<select name="STAGE_SEMANTIC" id="shef-tai-cs-outcome">
 					<?php foreach($outcomeNames as $code => $name): ?>
 						<option value="<?=$h($code)?>"<?=$code === $ruleEdit->stageSemantic ? ' selected' : ''?>><?=$h($name)?></option>

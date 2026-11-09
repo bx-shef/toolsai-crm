@@ -39,6 +39,7 @@ use Shef\ToolsAiCrm\Settings\CoreCheck;
 use Shef\ToolsAiCrm\Settings\Faq;
 use Shef\ToolsAiCrm\Settings\SectionAccess;
 use Shef\ToolsAiCrm\Settings\Sections;
+use Shef\ToolsAiCrm\Ui\Tai;
 
 defined('B_PROLOG_INCLUDED') && B_PROLOG_INCLUDED === true || die();
 
@@ -148,52 +149,21 @@ foreach(Sections::hiddenFields($section, $iframe) as $name => $value)
 // Скрипт в try/catch: ошибка нашего кода уходит в консоль и не обрывает скрипты ядра
 $wrapScript = static fn(string $js): string => '<script>try{'.$js."\n}catch(e){if(window.console){console.error('shef.toolsaicrm:',e);}}</script>";
 ?>
+<style><?= Tai::style() ?></style>
 <style>
-	.shef-tai { font-size: 14px; max-width: 1200px; }
-	.shef-tai h3 { margin: 22px 0 8px; font-size: 16px; }
-	.shef-tai-table { border-collapse: collapse; margin: 6px 0 12px; }
-	.shef-tai-table td { border: 1px solid #e0e3e7; padding: 6px 10px; vertical-align: top; }
-	.shef-tai-table-header td { background: #f5f7f8; font-weight: bold; }
-	.shef-tai-form { border-collapse: collapse; width: 100%; max-width: 1000px; }
-	.shef-tai-form td { padding: 8px 10px; vertical-align: top; border-bottom: 1px solid #eef0f2; }
-	.shef-tai-l { width: 40%; }
-	.shef-tai-q-cell { width: 24px; }
-	.shef-tai-q { display: inline-block; width: 18px; height: 18px; line-height: 18px; border-radius: 50%;
-		background: #e5f0fa; color: #2067b0; text-align: center; font-size: 12px; font-weight: bold;
-		text-decoration: none; vertical-align: middle; }
-	.shef-tai-q:hover { background: #2067b0; color: #fff; }
-	.shef-tai-buttons { margin: 16px 0; display: flex; gap: 8px; flex-wrap: wrap; }
-	.shef-tai textarea { max-width: 100%; }
 	/* Переход по левому меню (settings/navloader.js): старый раздел затемнён, по центру загрузчик */
 	.shef-tai { position: relative; }
 	.shef-tai.--nav-loading > :not(.shef-tai-nav-cover) { opacity: .25; pointer-events: none; transition: opacity .15s; }
 	.shef-tai-nav-cover { position: absolute; inset: 0; min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 10; }
 	.shef-tai-nav-cover[hidden] { display: none; }
-	.shef-tai-nav-error { margin: 0; color: var(--ui-color-base-90, #525c69); text-align: center; max-width: 420px; }
 </style>
 <?php if($allowed && Sections::hasCards($section)): ?>
 <style>
 	/* Как страница настроек портала (ui.form-elements): заголовок и описание — на
-	   сером фоне, каждый блок — своей белой карточкой */
+	   сером фоне, каждый блок — своей карточкой (вид карточки — tai.css) */
 	#workarea-content { background-color: transparent !important; }
 	/* Левый край описания и карточек — по заголовку слайдера (без отступа белой подложки) */
 	#workarea-content.ui-page-slider-workarea-content-padding { padding-left: 0; padding-right: 0; }
-	/* Иконки ui.icon-set.outline в строках и кнопках. */
-	.shef-tai-ic { --ui-icon-set__icon-size: 16px; --ui-icon-set__icon-color: currentColor; vertical-align: -3px; }
-	.shef-tai-ic.--ok { --ui-icon-set__icon-color: #1fa37a; } .shef-tai-ic.--warn { --ui-icon-set__icon-color: #e89b06; } .shef-tai-ic.--err { --ui-icon-set__icon-color: #e0453a; }
-	.shef-tai-page-desc { margin: 0 0 22px 0; font-size: var(--ui-font-size-lg, 15px); color: var(--ui-color-base-90, #525c69); }
-	.shef-tai-card { background: var(--ui-color-palette-white-base, #fff); border-radius: var(--ui-border-radius-2xl, 18px); padding: 18px 20px 20px; margin-bottom: 16px; overflow-x: auto; box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .02), 0 5px 16px 0 rgba(0, 0, 0, .03); }
-	.shef-tai-card > h3:first-child { margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--ui-color-base-7, #edeef0); font-size: var(--ui-font-size-xl, 17px); font-weight: var(--ui-font-weight-medium, 500); line-height: 23px; color: var(--ui-color-palette-black-base, #151515); }
-	.shef-tai-card > :last-child { margin-bottom: 0; }
-	.shef-tai-card p { color: var(--ui-color-palette-gray-90, #525c69); line-height: 19px; }
-	/* Таблицы — светлые рамки, серая шапка */
-	.shef-tai-card .shef-tai-table { border-collapse: separate; border-spacing: 0; border: 1px solid var(--ui-color-base-7, #edeef0); border-radius: 10px; overflow: hidden; }
-	.shef-tai-card .shef-tai-table td { border: 0; border-bottom: 1px solid var(--ui-color-base-7, #edeef0); padding: 9px 12px; }
-	.shef-tai-card .shef-tai-table tr:last-child td { border-bottom: 0; }
-	.shef-tai-card .shef-tai-table-header td { background: var(--ui-color-bg-content-secondary, #f6f7f8); font-weight: var(--ui-font-weight-medium, 500); color: var(--ui-color-palette-gray-90, #525c69); }
-	/* Поля без обёртки ui-ctl — по высоте и рамке как штатные */
-	.shef-tai-card input[type=text]:not(.ui-ctl-element), .shef-tai-card input[type=number]:not(.ui-ctl-element), .shef-tai-card select:not(.ui-ctl-element) { height: 34px; padding: 0 10px; border: 1px solid var(--ui-color-palette-gray-20, #dfe0e3); border-radius: var(--ui-border-radius-sm, 8px); background: #fff; font: inherit; box-sizing: border-box; }
-	.shef-tai-card textarea:not(.ui-ctl-element) { padding: 8px 10px; border: 1px solid var(--ui-color-palette-gray-20, #dfe0e3); border-radius: var(--ui-border-radius-sm, 8px); font: inherit; }
 </style>
 <?php endif; ?>
 <div class="shef-tai">

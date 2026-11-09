@@ -187,7 +187,7 @@ if($request->getQuery('reset') === 'Y')
 <div class="shef-tai-card">
 <?=$selector($code)?>
 <p>Шаблон промпта, по которому AI анализирует запись. Свой шаблон можно задать на уровне типа (сделки, лиды, конкретный смарт-процесс) и на уровне воронки. Действует ближайший: воронка → тип → стандартный шаблон модуля. Данные подставляет модуль — переменные ниже. Форма ответа общая (risk, needSenior, why, nextStep): требование JSON модуль добавит сам. Свой промпт в профиле анализа главнее системной части шаблона.</p>
-<p style="color:#555">
+<p style="color:var(--tai-text-2)">
 	<b><?=$h($levelTitle)?></b>:
 	<?php if($state['state'] === 'own'): ?>
 		свой шаблон, версия <?=(int)$template->version?>, изменён <?=$h($template->changedAt > 0 ? date('d.m.Y H:i', $template->changedAt) : '—')?>, пользователь #<?=(int)$template->changedBy?>.
@@ -214,8 +214,8 @@ $formUser = $posted ? (string)$request->getPost('USER_TEXT') : $template->user;
 $formExtra = $posted ? (string)$request->getPost('EXTRA_FIELDS') : implode(', ', $template->extraFields);
 ?>
 <?php if(!$canEdit): ?>
-<p><b>Инструкция модели (системная часть)</b></p><pre style="white-space:pre-wrap;background:#f5f5f5;padding:8px;max-width:900px"><?=$h($formSystem)?></pre>
-<p><b>Данные (пользовательская часть)</b></p><pre style="white-space:pre-wrap;background:#f5f5f5;padding:8px;max-width:900px"><?=$h($formUser)?></pre>
+<p><b>Инструкция модели (системная часть)</b></p><pre style="white-space:pre-wrap;background:var(--tai-surface-2);color:var(--tai-text);padding:8px;max-width:900px"><?=$h($formSystem)?></pre>
+<p><b>Данные (пользовательская часть)</b></p><pre style="white-space:pre-wrap;background:var(--tai-surface-2);color:var(--tai-text);padding:8px;max-width:900px"><?=$h($formUser)?></pre>
 <p><b>Свои поля ответа:</b> <?=$h($formExtra !== '' ? $formExtra : 'нет')?></p>
 <?php else: ?>
 <form method="post" action="<?=$h($self)?>">
@@ -235,7 +235,7 @@ $formExtra = $posted ? (string)$request->getPost('EXTRA_FIELDS') : implode(', ',
 	<?=bitrix_sessid_post()?>
 	<input type="hidden" name="reset" value="Y">
 	<input type="submit" class="ui-btn ui-btn-danger-light" value="Удалить свой шаблон"> <?=$help('prompts.delete')?>
-	<span style="color:#777">После удаления действует: <?=$h($titleOf($parentResolved['source']))?>. Это и есть «вернуть стандартный»: отдельной кнопки нет, потому что действие одно и то же.</span>
+	<span style="color:var(--tai-text-3)">После удаления действует: <?=$h($titleOf($parentResolved['source']))?>. Это и есть «вернуть стандартный»: отдельной кнопки нет, потому что действие одно и то же.</span>
 </form>
 <details style="margin-top:8px"><summary>Что будет действовать без своего: <?=$h($titleOf($parentResolved['source']))?></summary><pre style="white-space:pre-wrap"><?=$h($parentResolved['template']->system."\n\n---\n".$parentResolved['template']->user)?></pre></details>
 <?php endif; ?>
@@ -254,9 +254,9 @@ $formExtra = $posted ? (string)$request->getPost('EXTRA_FIELDS') : implode(', ',
 <?php if($preview !== null): ?>
 	<p>Уровень записи: <b><?=$h($titleOf($preview['level']))?></b>; сработал шаблон: <b><?=$h($titleOf($preview['source']))?></b>.</p>
 	<p>Профиль: <?=$h($preview['profile']?->title ?? 'не подобрался — агент запись бы не анализировал')?></p>
-	<p><b>Системная часть</b></p><pre style="white-space:pre-wrap;background:#f5f5f5;padding:8px"><?=$h($preview['system'])?></pre>
-	<p><b>Данные</b></p><pre style="white-space:pre-wrap;background:#f5f5f5;padding:8px"><?=$h($preview['user'])?></pre>
-	<p><b>Схема ответа</b></p><pre style="white-space:pre-wrap;background:#f5f5f5;padding:8px"><?=$h(json_encode($preview['schema'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))?></pre>
+	<p><b>Системная часть</b></p><pre style="white-space:pre-wrap;background:var(--tai-surface-2);color:var(--tai-text);padding:8px"><?=$h($preview['system'])?></pre>
+	<p><b>Данные</b></p><pre style="white-space:pre-wrap;background:var(--tai-surface-2);color:var(--tai-text);padding:8px"><?=$h($preview['user'])?></pre>
+	<p><b>Схема ответа</b></p><pre style="white-space:pre-wrap;background:var(--tai-surface-2);color:var(--tai-text);padding:8px"><?=$h(json_encode($preview['schema'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT))?></pre>
 <?php endif; ?>
 </div>
 <?php endif; ?>

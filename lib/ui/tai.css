@@ -1,0 +1,272 @@
+/* Общий слой стилей экранов shef.toolsai (bx-shef/toolsai#481): токены --tai-* и компоненты
+   дизайн-системы v2 (toolsai-assistant docs/design/v2), как в виде «AI» (#588), плитках (#647) и «ракете» (#593).
+   Скопировано из shef.toolsai (lib/ui/tai.css, ef8da37c): модуль shef.toolsaicrm держит свою копию слоя,
+   потому что ассет shef.toolsai не публичен и привязан к его модулю. Подключает Ui\Tai::style().
+   Светлая тема — по умолчанию, тёмная — .bitrix24-dark-theme (как в виде «AI»).
+   Значения токенов — как в design/v2/tokens.css; поверхности, разделители и статусы — только отсюда,
+   в разметке экранов цветов нет (проверяет tests/taistyle_test.php). */
+
+/* region Токены ////// */
+.shef-tai, .shef-tai-view, .shef-tai-hub, .shef-ui-scope {
+	--tai-iris: linear-gradient(90deg, #6E5BFF, #3FA9FF, #7CFFE4);
+	--tai-iris-tint: linear-gradient(100deg, #F0EDFF, #EAF5FF 55%, #EAFFF9);
+	--tai-iris-fill: linear-gradient(135deg, #4B3CD0 0%, #1F6FC8 55%, #137A78 100%);
+	--tai-surface: #FFFFFF;
+	--tai-surface-2: #F6F5FA;
+	--tai-surface-3: #EEECF4;
+	--tai-text: #1F1F23;
+	--tai-text-2: #45454C;
+	--tai-text-3: #5E5E68;
+	--tai-text-disabled: #8C8A99;
+	--tai-accent: #4B3CD0;
+	--tai-accent-hover: #3E30B8;
+	--tai-accent-soft: #EFEDFF;
+	--tai-accent-on-soft: #3E30B8;
+	--tai-focus: #4B3CD0;
+	--tai-border: #E6E3EE;
+	--tai-border-strong: #8E8A9E;
+	--tai-success: #1E7A3C; --tai-success-bg: #E7F5EC; --tai-success-icon: #2E9150;
+	--tai-warning: #8A5300; --tai-warning-bg: #FFF3DC; --tai-warning-icon: #B87A12;
+	--tai-danger: #B42318; --tai-danger-bg: #FDECEA; --tai-danger-icon: #D23B2F;
+	--tai-info: #2A5FB0; --tai-info-bg: #EAF1FD; --tai-info-icon: #3E7BDB;
+	--tai-fs-11: 11.5px; --tai-fs-12: 12.5px; --tai-fs-13: 13.5px; --tai-fs-14: 14.5px; --tai-fs-17: 17px; --tai-fs-20: 20px;
+	--tai-fw-medium: 500; --tai-fw-semibold: 600;
+	--tai-sp-2: 4px; --tai-sp-4: 8px; --tai-sp-5: 10px; --tai-sp-6: 12px; --tai-sp-7: 14px; --tai-sp-8: 16px; --tai-sp-9: 20px; --tai-sp-10: 24px;
+	--tai-h-control: 36px; --tai-h-control-sm: 32px;
+	--tai-r-xs: 6px; --tai-r-sm: 8px; --tai-r-md: 10px; --tai-r-lg: 14px; --tai-r-pill: 999px;
+	--tai-sh-1: 0 1px 2px rgba(31, 31, 35, .04), 0 10px 28px -14px rgba(63, 169, 255, .20);
+	--tai-sh-fill: 0 3px 8px -4px rgba(91, 71, 232, .5);
+	--tai-focus-ring: 0 0 0 2px var(--tai-surface), 0 0 0 4px var(--tai-focus);
+	color: var(--tai-text);
+}
+.bitrix24-dark-theme .shef-tai, .bitrix24-dark-theme .shef-tai-view, .bitrix24-dark-theme .shef-tai-hub, .bitrix24-dark-theme .shef-ui-scope {
+	--tai-iris-tint: linear-gradient(100deg, rgba(110, 91, 255, .18), rgba(63, 169, 255, .18) 55%, rgba(124, 255, 228, .14));
+	--tai-surface: #1C1B24;
+	--tai-surface-2: #24232E;
+	--tai-surface-3: #2D2B39;
+	--tai-text: #ECEBF2;
+	--tai-text-2: #C9C7D4;
+	--tai-text-3: #A3A1B0;
+	--tai-text-disabled: #6C6A7A;
+	--tai-accent: #A9B4FF;
+	--tai-accent-hover: #C3CBFF;
+	--tai-accent-soft: rgba(110, 91, 255, .22);
+	--tai-accent-on-soft: #D3D8FF;
+	--tai-focus: #A9B4FF;
+	--tai-border: #2F2D3A;
+	--tai-border-strong: #6E6A82;
+	--tai-success: #6FD49A; --tai-success-bg: rgba(46, 145, 80, .18); --tai-success-icon: #6FD49A;
+	--tai-warning: #F2B654; --tai-warning-bg: rgba(184, 122, 18, .20); --tai-warning-icon: #F2B654;
+	--tai-danger: #FF8E85; --tai-danger-bg: rgba(210, 59, 47, .20); --tai-danger-icon: #FF8E85;
+	--tai-info: #8DB8FF; --tai-info-bg: rgba(62, 123, 219, .20); --tai-info-icon: #8DB8FF;
+	--tai-sh-1: 0 1px 2px rgba(0, 0, 0, .30), 0 10px 28px -14px rgba(0, 0, 0, .6);
+}
+/* endregion */
+
+/* region Страница и заголовки ////// */
+.shef-tai { font-size: var(--tai-fs-14); line-height: 1.5; max-width: 1200px; }
+.shef-tai h3 { margin: 22px 0 8px; font-size: var(--tai-fs-17); font-weight: var(--tai-fw-semibold); line-height: 22px; color: var(--tai-text); }
+.shef-tai h4 { color: var(--tai-text); font-size: var(--tai-fs-14); font-weight: var(--tai-fw-semibold); }
+.shef-tai a { color: var(--tai-accent); }
+.shef-tai a:hover { color: var(--tai-accent-hover); }
+.shef-tai a:focus-visible, .shef-tai summary:focus-visible { outline: 0; border-radius: var(--tai-r-xs); box-shadow: var(--tai-focus-ring); }
+.shef-tai-page-desc { margin: 0 0 var(--tai-sp-10); font-size: var(--tai-fs-14); line-height: 22px; color: var(--tai-text-3); }
+.shef-tai small, .shef-tai-sub, .shef-tai-card p.shef-tai-sub { color: var(--tai-text-3); }
+.shef-tai code { padding: 1px 6px; border-radius: var(--tai-r-xs); background: var(--tai-surface-2); color: var(--tai-text-2); font-size: var(--tai-fs-12); }
+.shef-tai-nav { margin: 0 0 var(--tai-sp-8); display: flex; flex-wrap: wrap; gap: 6px; }
+.shef-tai-toc a { margin-right: var(--tai-sp-6); }
+.shef-tai-buttons, .shef-tai-form-buttons { margin: var(--tai-sp-8) 0; display: flex; gap: var(--tai-sp-4); flex-wrap: wrap; }
+/* endregion */
+
+/* region Карточка и группа полей ////// */
+.shef-tai-card, .shef-ui-card {
+	box-sizing: border-box;
+	margin-bottom: var(--tai-sp-8);
+	padding: 18px var(--tai-sp-9) var(--tai-sp-9);
+	border: 1px solid var(--tai-border);
+	border-radius: var(--tai-r-lg);
+	background: var(--tai-surface);
+	box-shadow: var(--tai-sh-1);
+	color: var(--tai-text);
+}
+.shef-tai-card { overflow-x: auto; }
+.shef-tai-card > h3:first-child { margin: 0 0 14px; padding-bottom: var(--tai-sp-5); border-bottom: 1px solid var(--tai-border); }
+.shef-tai-card > :last-child { margin-bottom: 0; }
+.shef-tai-card p { color: var(--tai-text-2); line-height: 20px; }
+.shef-ui-card__head { border-bottom-color: var(--tai-border); }
+.shef-ui-card__icon { background: var(--tai-accent-soft); --ui-icon-set__icon-color: var(--tai-accent); }
+.shef-ui-card__title { color: var(--tai-text); font-weight: var(--tai-fw-semibold); }
+.shef-ui-card__desc, .shef-ui-row__desc { color: var(--tai-text-3); }
+.shef-ui-card__toggle, .shef-ui-row__eye { color: var(--tai-accent); }
+.shef-ui-row { border-bottom-color: var(--tai-border); }
+.shef-ui-row__label { color: var(--tai-text-2); }
+.shef-ui-row.--switch .shef-ui-row__label, .shef-ui-row__info { color: var(--tai-text); }
+.shef-ui-row__info { border-bottom-color: var(--tai-border); }
+.shef-ui-row__secret { color: var(--tai-success); }
+.shef-ui-row__secret.--empty { color: var(--tai-text-3); }
+/* endregion */
+
+/* region Таблицы ////// */
+.shef-tai-table { border-collapse: collapse; margin: 6px 0 var(--tai-sp-6); color: var(--tai-text); font-size: var(--tai-fs-13); }
+.shef-tai-table td, .shef-tai-table th { border: 1px solid var(--tai-border); padding: 6px var(--tai-sp-5); vertical-align: top; }
+.shef-tai-table-header td { background: var(--tai-surface-2); font-weight: var(--tai-fw-semibold); }
+.shef-tai-card .shef-tai-table { border-collapse: separate; border-spacing: 0; border: 1px solid var(--tai-border); border-radius: var(--tai-r-md); overflow: hidden; }
+.shef-tai-card .shef-tai-table td, .shef-tai-card .shef-tai-table th { border: 0; border-bottom: 1px solid var(--tai-border); padding: var(--tai-sp-5) var(--tai-sp-6); }
+.shef-tai-card .shef-tai-table tr:last-child td { border-bottom: 0; }
+.shef-tai-card .shef-tai-table tr:not(.shef-tai-table-header):hover td { background: var(--tai-surface-2); }
+.shef-tai-card .shef-tai-table-header td { background: var(--tai-surface-2); color: var(--tai-text-3); font-size: var(--tai-fs-12); font-weight: var(--tai-fw-semibold); }
+.shef-tai-form { border-collapse: collapse; width: 100%; max-width: 1000px; }
+.shef-tai-form td { padding: var(--tai-sp-4) var(--tai-sp-5); vertical-align: top; border-bottom: 1px solid var(--tai-border); }
+.shef-tai-l { width: 40%; }
+.shef-tai-options td small { color: var(--tai-text-3); }
+.shef-tai-q-cell { width: 24px; }
+/* Подсказка «?» */
+.shef-tai-q { display: inline-block; width: 18px; height: 18px; line-height: 18px; border-radius: 50%; background: var(--tai-accent-soft); color: var(--tai-accent-on-soft); text-align: center; font-size: var(--tai-fs-12); font-weight: var(--tai-fw-semibold); text-decoration: none; vertical-align: middle; }
+.shef-tai a.shef-tai-q:hover { background: var(--tai-accent); color: var(--tai-surface); }
+.shef-tai-faq-item { padding: var(--tai-sp-4) var(--tai-sp-6); margin: 0 0 var(--tai-sp-4); border-left: 3px solid var(--tai-border); max-width: 900px; }
+.shef-tai-faq-item p { margin: 4px 0; }
+.shef-tai-faq-active { border-left-color: var(--tai-accent); background: var(--tai-accent-soft); }
+.shef-tai-faq-link, .shef-tai-faq-open { color: var(--tai-text-3); font-size: var(--tai-fs-12); font-weight: normal; margin-left: 6px; }
+/* Оценки: рейтинговая таблица «Звонки» и «Статистика» */
+.shef-tai-rating { color: var(--tai-text); }
+.shef-tai-rating th, .shef-tai-rating td { border-bottom-color: var(--tai-border); }
+.shef-tai-rating th { color: var(--tai-text-3); background: var(--tai-surface-2); }
+.shef-tai-rating th:first-child { background: var(--tai-surface-2); }
+.shef-tai-rating td:first-child { background: var(--tai-surface); }
+.shef-tai-rating td.shef-tai-rating-total, .shef-tai-rating th.shef-tai-rating-total { border-left-color: var(--tai-border); }
+.shef-tai-rating-cell { border-radius: var(--tai-r-xs); }
+.shef-tai-rating-good { background: var(--tai-success-bg); color: var(--tai-success); }
+.shef-tai-rating-mid { background: var(--tai-warning-bg); color: var(--tai-warning); }
+.shef-tai-rating-bad { background: var(--tai-danger-bg); color: var(--tai-danger); }
+.shef-tai-rating-up { color: var(--tai-success); }
+.shef-tai-rating-down { color: var(--tai-danger); }
+.shef-tai-rating-flat, .shef-tai-rating-empty { color: var(--tai-text-disabled); }
+.shef-tai-rating-note, .shef-tai-rating-legend, .shef-tai-calls-sub { color: var(--tai-text-3); }
+.shef-tai-calls-bar { background: var(--tai-info-icon); }
+/* endregion */
+
+/* region Поля ////// */
+.shef-tai {
+	--ui-field-color-border-default: 142, 138, 158;
+	--ui-field-color-primary: var(--tai-focus);
+	--ui-field-color-focused: var(--tai-focus);
+	--ui-field-color-link: var(--tai-accent);
+	--ui-field-color-danger: var(--tai-danger-icon);
+	--ui-field-color-success: var(--tai-success-icon);
+}
+.shef-tai .ui-ctl-element, .shef-tai .ui-ctl-textbox .ui-ctl-element {
+	border-radius: var(--tai-r-md);
+	background-color: var(--tai-surface);
+	color: var(--tai-text);
+	font-size: var(--tai-fs-14);
+}
+.shef-tai .ui-ctl-element:hover { color: var(--tai-text); }
+.shef-tai .ui-ctl-element:focus { box-shadow: var(--tai-focus-ring); }
+.shef-tai .ui-ctl-element::placeholder { color: var(--tai-text-disabled); }
+.shef-tai .ui-ctl-label-text, .shef-tai label { color: var(--tai-text-2); }
+.shef-tai input[type=text]:not(.ui-ctl-element), .shef-tai input[type=number]:not(.ui-ctl-element), .shef-tai select:not(.ui-ctl-element) {
+	box-sizing: border-box; height: var(--tai-h-control); padding: 0 var(--tai-sp-5);
+	border: 1px solid var(--tai-border-strong); border-radius: var(--tai-r-md);
+	background: var(--tai-surface); color: var(--tai-text); font: inherit;
+}
+.shef-tai textarea:not(.ui-ctl-element) {
+	box-sizing: border-box; max-width: 100%; padding: var(--tai-sp-4) var(--tai-sp-5);
+	border: 1px solid var(--tai-border-strong); border-radius: var(--tai-r-md);
+	background: var(--tai-surface); color: var(--tai-text); font: inherit;
+}
+.shef-tai input:not(.ui-ctl-element):focus-visible, .shef-tai select:not(.ui-ctl-element):focus-visible, .shef-tai textarea:not(.ui-ctl-element):focus-visible { outline: 0; border-color: var(--tai-focus); box-shadow: var(--tai-focus-ring); }
+/* endregion */
+
+/* region Кнопки: штатные ui-btn в виде Air (settings/component.php добавляет --air) ////// */
+.shef-tai .ui-btn.--air {
+	--ui-btn-radius: var(--tai-r-md);
+	font-size: var(--tai-fs-13);
+	font-weight: var(--tai-fw-medium);
+}
+.shef-tai .ui-btn.--air.--style-filled {
+	--ui-btn-background: var(--tai-accent);
+	--ui-btn-background-gradient: var(--tai-iris-fill);
+	--ui-btn-background-gradient-hover: var(--tai-iris-fill);
+	--ui-btn-background-gradient-active: var(--tai-iris-fill);
+	--ui-btn-border-color: transparent;
+	--ui-btn-color: #FFFFFF;
+	--ui-btn-box-shadow: var(--tai-sh-fill);
+	box-shadow: var(--tai-sh-fill);
+}
+.shef-tai .ui-btn.--air.--style-filled:hover, .shef-tai .ui-btn.--air.--style-filled:focus-visible { filter: brightness(1.08); }
+.shef-tai .ui-btn.--air.--style-outline, .shef-tai .ui-btn.--air.--style-outline-accent-1 {
+	--ui-btn-background: var(--tai-surface);
+	--ui-btn-background-gradient: linear-gradient(var(--tai-surface), var(--tai-surface));
+	--ui-btn-background-gradient-hover: linear-gradient(var(--tai-surface-2), var(--tai-surface-2));
+	--ui-btn-background-gradient-active: linear-gradient(var(--tai-surface-3), var(--tai-surface-3));
+	--ui-btn-border-color: var(--tai-border-strong);
+	--ui-btn-border-color-hover: var(--tai-border-strong);
+	--ui-btn-border-width: 1px;
+	--ui-btn-color: var(--tai-text);
+}
+.shef-tai .ui-btn.--air.--style-outline-accent-1 {
+	--ui-btn-border-color: var(--tai-danger-icon);
+	--ui-btn-border-color-hover: var(--tai-danger-icon);
+	--ui-btn-color: var(--tai-danger);
+}
+.shef-tai .ui-btn.--air.--style-plain {
+	--ui-btn-background-gradient: none;
+	--ui-btn-background-gradient-hover: linear-gradient(var(--tai-surface-2), var(--tai-surface-2));
+	--ui-btn-background-gradient-active: linear-gradient(var(--tai-surface-3), var(--tai-surface-3));
+	--ui-btn-color: var(--tai-accent);
+}
+.shef-tai .ui-btn.--air:focus-visible { outline: 0; box-shadow: var(--tai-focus-ring); }
+.shef-tai .ui-btn.--air.ui-btn-disabled, .shef-tai .ui-btn.--air:disabled { opacity: .5; }
+/* endregion */
+
+/* region Бейджи, значки, предупреждения ////// */
+.shef-tai-badge {
+	display: inline-block; padding: 1px var(--tai-sp-4); border-radius: var(--tai-r-xs);
+	background: var(--tai-surface-3); color: var(--tai-text-2);
+	font-size: var(--tai-fs-11); font-weight: var(--tai-fw-medium); line-height: 16px; white-space: nowrap;
+}
+.shef-tai-badge.--ok { background: var(--tai-success-bg); color: var(--tai-success); }
+.shef-tai-badge.--warn { background: var(--tai-warning-bg); color: var(--tai-warning); }
+.shef-tai-badge.--err { background: var(--tai-danger-bg); color: var(--tai-danger); }
+.shef-tai-badge.--info { background: var(--tai-info-bg); color: var(--tai-info); }
+.shef-tai-ic { --ui-icon-set__icon-size: 16px; --ui-icon-set__icon-color: currentColor; vertical-align: -3px; }
+.shef-tai-ic.--ok { --ui-icon-set__icon-color: var(--tai-success-icon); }
+.shef-tai-ic.--warn { --ui-icon-set__icon-color: var(--tai-warning-icon); }
+.shef-tai-ic.--err { --ui-icon-set__icon-color: var(--tai-danger-icon); }
+.shef-tai .ui-alert { border-radius: var(--tai-r-md); border: 1px solid transparent; font-size: var(--tai-fs-13); }
+.shef-tai .ui-alert.ui-alert-success { background: var(--tai-success-bg); border-color: var(--tai-success-icon); --ui-alert-text-color: var(--tai-success); }
+.shef-tai .ui-alert.ui-alert-warning { background: var(--tai-warning-bg); border-color: var(--tai-warning-icon); --ui-alert-text-color: var(--tai-warning); }
+.shef-tai .ui-alert.ui-alert-danger { background: var(--tai-danger-bg); border-color: var(--tai-danger-icon); --ui-alert-text-color: var(--tai-danger); }
+.shef-tai .ui-alert.ui-alert-primary { background: var(--tai-info-bg); border-color: var(--tai-info-icon); --ui-alert-text-color: var(--tai-info); }
+.shef-tai .ui-alert .ui-alert-message { color: var(--tai-text); }
+.shef-tai .ui-alert a { color: var(--tai-accent); }
+/* endregion */
+
+/* region Показатели и шкала ////// */
+.shef-tai-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--tai-sp-6); margin: 0 0 var(--tai-sp-7); }
+.shef-tai-kpi { padding: var(--tai-sp-6) 14px; border: 1px solid var(--tai-border); border-radius: var(--tai-r-md); background: var(--tai-surface-2); }
+.shef-tai-kpi__label { font-size: var(--tai-fs-12); line-height: 18px; color: var(--tai-text-3); }
+.shef-tai-kpi__value { font-size: var(--tai-fs-20); font-weight: var(--tai-fw-semibold); line-height: 26px; color: var(--tai-text); font-variant-numeric: tabular-nums; }
+.shef-tai-kpi__value .shef-tai-badge { vertical-align: 3px; }
+.shef-tai-meter { height: 6px; margin: 0 0 var(--tai-sp-8); border-radius: var(--tai-r-pill); background: var(--tai-surface-3); overflow: hidden; }
+.shef-tai-meter > span { display: block; height: 100%; border-radius: inherit; background: var(--tai-iris); transition: width .3s; }
+.shef-tai-meter.--warn > span { background: var(--tai-warning-icon); }
+.shef-tai-meter.--err > span { background: var(--tai-danger-icon); }
+/* endregion */
+
+/* region Раскрывающиеся блоки, пустые состояния ////// */
+.shef-tai summary { cursor: pointer; color: var(--tai-accent); }
+.shef-tai-empty { padding: var(--tai-sp-10) var(--tai-sp-8); border: 1px dashed var(--tai-border-strong); border-radius: var(--tai-r-lg); background: var(--tai-surface-2); color: var(--tai-text-3); text-align: center; }
+.shef-tai-nav-error { margin: 0; color: var(--tai-text-3); text-align: center; max-width: 420px; }
+/* endregion */
+
+/* region Узкий экран (телефон) ////// */
+@media (max-width: 720px) {
+	.shef-tai-card, .shef-ui-card { padding: var(--tai-sp-6) var(--tai-sp-8) var(--tai-sp-8); border-radius: var(--tai-r-md); }
+	.shef-tai-l { width: auto; }
+	.shef-tai-page-desc { margin-bottom: var(--tai-sp-8); }
+	.shef-tai-buttons, .shef-tai-form-buttons { flex-direction: column; align-items: stretch; }
+	.shef-tai .ui-ctl { width: 100%; }
+	.shef-tai input[type=text]:not(.ui-ctl-element), .shef-tai input[type=number]:not(.ui-ctl-element), .shef-tai select:not(.ui-ctl-element) { max-width: 100%; height: 44px; }
+}
+/* endregion */

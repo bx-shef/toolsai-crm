@@ -190,15 +190,17 @@ BX.ready(function() {
 <?php if($show('checks')): ?>
 <div class="shef-tai-card">
 <h3><?=$msg('DEALS')?> <?=$help('stats.deals')?></h3>
-<ul>
-	<li><?=$msg('DEALS_CHECKED')?>: <b><?=$int($deals['CNT'] ?? 0)?></b>,
-		<?=$msg('DEALS_ANALYZED')?>: <b><?=$int($deals['ANALYZED'] ?? 0)?></b>,
-		<?=$msg('DEALS_SKIPPED')?>: <b><?=$int($deals['SKIPPED_CNT'] ?? 0)?></b></li>
-	<li><?=$msg('DEALS_TODO')?>: <b><?=$int($dealTodo['TODO'] ?? 0)?></b>,
-		<?=$msg('DEALS_ESC')?>: <b><?=$int($dealTodo['ESC'] ?? 0)?></b><?php if($dealOverdue !== null): ?>,
-		<?=$msg('DEALS_OVERDUE')?>: <b><?=$int($dealOverdue['CNT'] ?? 0)?></b><?php endif; ?></li>
-</ul>
-<p style="color:#777"><?=$msg('DEALS_NOTE')?></p>
+<div class="shef-tai-kpis">
+	<div class="shef-tai-kpi"><div class="shef-tai-kpi__label"><?=$msg('DEALS_CHECKED')?></div><div class="shef-tai-kpi__value"><?=$int($deals['CNT'] ?? 0)?></div></div>
+	<div class="shef-tai-kpi"><div class="shef-tai-kpi__label"><?=$msg('DEALS_ANALYZED')?></div><div class="shef-tai-kpi__value"><?=$int($deals['ANALYZED'] ?? 0)?></div></div>
+	<div class="shef-tai-kpi"><div class="shef-tai-kpi__label"><?=$msg('DEALS_SKIPPED')?></div><div class="shef-tai-kpi__value"><?=$int($deals['SKIPPED_CNT'] ?? 0)?></div></div>
+	<div class="shef-tai-kpi"><div class="shef-tai-kpi__label"><?=$msg('DEALS_TODO')?></div><div class="shef-tai-kpi__value"><?=$int($dealTodo['TODO'] ?? 0)?></div></div>
+	<div class="shef-tai-kpi"><div class="shef-tai-kpi__label"><?=$msg('DEALS_ESC')?></div><div class="shef-tai-kpi__value"><?=$int($dealTodo['ESC'] ?? 0)?></div></div>
+<?php if($dealOverdue !== null): ?>
+	<div class="shef-tai-kpi"><div class="shef-tai-kpi__label"><?=$msg('DEALS_OVERDUE')?></div><div class="shef-tai-kpi__value"><?=$int($dealOverdue['CNT'] ?? 0)?></div></div>
+<?php endif; ?>
+</div>
+<p style="color:var(--tai-text-3)"><?=$msg('DEALS_NOTE')?></p>
 <?php foreach(['TYPE' => $byType, 'MANAGER' => $byManager, 'PROFILE' => $byProfile] as $kind => $rows): ?>
 	<table class="shef-tai-table" style="margin-bottom:10px">
 		<thead>
@@ -236,7 +238,7 @@ BX.ready(function() {
 <div class="shef-tai-card">
 <h3><?=$msg('MANAGER_SCORES')?> <?=$help('stats.manager_scores')?></h3>
 <?php if($managerScores === []): ?>
-	<p style="color:#777"><?=$msg('MANAGER_SCORES_EMPTY')?></p>
+	<p style="color:var(--tai-text-3)"><?=$msg('MANAGER_SCORES_EMPTY')?></p>
 <?php else: ?>
 	<table class="shef-tai-table">
 		<thead>
@@ -259,7 +261,7 @@ BX.ready(function() {
 		</tbody>
 	</table>
 <?php endif; ?>
-<p style="color:#777"><?=$msg('MANAGER_SCORES_NOTE')?></p>
+<p style="color:var(--tai-text-3)"><?=$msg('MANAGER_SCORES_NOTE')?></p>
 </div>
 
 <?php endif; ?>

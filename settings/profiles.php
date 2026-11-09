@@ -222,7 +222,7 @@ if($request->getQuery('saved') === 'Y' || $request->getQuery('deleted') === 'Y')
 		<?php foreach(DealProfileTable::getProfiles() as $profile): ?>
 			<tr class="shef-tai-table-row">
 				<td class="shef-tai-table-cell"><?=(int)$profile->id?></td>
-				<td class="shef-tai-table-cell"><a href="<?=$h($self.'&edit='.$profile->id)?>"><?=$h($profile->title)?></a> <span style="color:#777">(<?=(int)$profile->sort?>)</span></td>
+				<td class="shef-tai-table-cell"><a href="<?=$h($self.'&edit='.$profile->id)?>"><?=$h($profile->title)?></a> <span style="color:var(--tai-text-3)">(<?=(int)$profile->sort?>)</span></td>
 				<td class="shef-tai-table-cell"><?=$h(Loc::getMessage($profile->enabled ? 'SH_TOOLSAICRM_PROFILES_YES' : 'SH_TOOLSAICRM_PROFILES_NO'))?></td>
 				<td class="shef-tai-table-cell"><?=$h($places[EntityType::toKey($profile->entityTypeId, $profile->categoryId)] ?? '#'.$profile->entityTypeId.':'.$profile->categoryId)?></td>
 				<td class="shef-tai-table-cell"><?=$h($profile->isAnyClient()
@@ -267,7 +267,7 @@ if($request->getQuery('saved') === 'Y' || $request->getQuery('deleted') === 'Y')
 	<?php if($agentTypes !== []): ?>
 	<div class="shef-tai-card">
 	<h3 style="margin-top:0">Агенты анализа <?=$help('profiles.agents')?></h3>
-	<p style="color:#555;max-width:900px">У каждого типа — свой агент: свой интервал, свой лимит анализов за прогон, своя блокировка. Пусто — общие настройки модуля («Запускать агент раз в», «Анализов за прогон»). Агент работает, пока у типа есть включённый профиль; после сохранения агенты сверяются сразу.</p>
+	<p style="color:var(--tai-text-2);max-width:900px">У каждого типа — свой агент: свой интервал, свой лимит анализов за прогон, своя блокировка. Пусто — общие настройки модуля («Запускать агент раз в», «Анализов за прогон»). Агент работает, пока у типа есть включённый профиль; после сохранения агенты сверяются сразу.</p>
 	<form method="post" action="<?=$h($self)?>">
 		<?=bitrix_sessid_post()?>
 		<input type="hidden" name="agents" value="Y">
@@ -397,7 +397,7 @@ if($request->getQuery('saved') === 'Y' || $request->getQuery('deleted') === 'Y')
 			</tr>
 			<?php // Стадии и итог (#408): список стадий — той воронки, что выбрана в «Где анализировать». ?>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_STAGES'))?>: <?=$help('profile.stages')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_STAGES_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_STAGES'))?>: <?=$help('profile.stages')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_STAGES_DESCR'))?></span></td>
 				<td class="shef-tai-r">
 					<select name="STAGE_SEMANTIC" id="shef-tai-profile-outcome">
 						<?php foreach($outcomeNames as $code => $name): ?>
@@ -415,16 +415,16 @@ if($request->getQuery('saved') === 'Y' || $request->getQuery('deleted') === 'Y')
 			</tr>
 			<?php // Поля типа клиента — по месту анализа (1.67.0): у лида свои признаки, у сделки и смарт-процесса — тип клиента ядра. Сервер лишнее и так не сохраняет (Profile). ?>
 			<tr data-shef-for="client"<?=$editing->entityTypeId === EntityType::LEAD ? ' hidden' : ''?>>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_CLIENT_TYPES'))?>: <?=$help('profile.client_types')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_CLIENT_TYPES_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_CLIENT_TYPES'))?>: <?=$help('profile.client_types')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_CLIENT_TYPES_DESCR'))?></span></td>
 				<td class="shef-tai-r">
 					<?php foreach($clientTypeNames as $type => $name): ?>
 						<label><input type="checkbox" name="CLIENT_TYPES[]" value="<?=(int)$type?>"<?=in_array($type, $editing->clientTypes, true) ? ' checked' : ''?>> <?=$h($name)?></label><br>
 					<?php endforeach; ?>
-					<p style="color:#777;max-width:600px"><?=nl2br($h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_CLIENT_HELP')))?></p>
+					<p style="color:var(--tai-text-3);max-width:600px"><?=nl2br($h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_CLIENT_HELP')))?></p>
 				</td>
 			</tr>
 			<tr data-shef-for="lead"<?=$editing->entityTypeId === EntityType::LEAD ? '' : ' hidden'?>>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_LEAD_CLIENT'))?>: <?=$help('profile.lead_client')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_LEAD_CLIENT_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_LEAD_CLIENT'))?>: <?=$help('profile.lead_client')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_LEAD_CLIENT_DESCR'))?></span></td>
 				<td class="shef-tai-r">
 					<select name="LEAD_REPEAT">
 						<?php foreach($leadRepeatNames as $code => $name): ?>
@@ -436,15 +436,15 @@ if($request->getQuery('saved') === 'Y' || $request->getQuery('deleted') === 'Y')
 							<option value="<?=$h($code)?>"<?=$code === $editing->leadLegal ? ' selected' : ''?>><?=$h($name)?></option>
 						<?php endforeach; ?>
 					</select>
-					<p style="color:#777;max-width:600px"><?=nl2br($h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_LEAD_CLIENT_HELP')))?></p>
+					<p style="color:var(--tai-text-3);max-width:600px"><?=nl2br($h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_LEAD_CLIENT_HELP')))?></p>
 				</td>
 			</tr>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_IDLE_DAYS'))?>: <?=$help('profile.idle_days')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_IDLE_DAYS_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_IDLE_DAYS'))?>: <?=$help('profile.idle_days')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_IDLE_DAYS_DESCR'))?></span></td>
 				<td class="shef-tai-r"><input type="text" name="IDLE_DAYS" size="6" value="<?=(int)$editing->idleDays?>"></td>
 			</tr>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_ACTIVE_DAYS'))?>: <?=$help('profile.active_days')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_ACTIVE_DAYS_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_ACTIVE_DAYS'))?>: <?=$help('profile.active_days')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_ACTIVE_DAYS_DESCR'))?></span></td>
 				<td class="shef-tai-r"><input type="text" name="ACTIVE_DAYS" size="6" value="<?=(int)$editing->activeDays?>"></td>
 			</tr>
 			<tr>
@@ -452,27 +452,27 @@ if($request->getQuery('saved') === 'Y' || $request->getQuery('deleted') === 'Y')
 				<td class="shef-tai-r"><input type="text" name="REANALYZE_DAYS" size="6" value="<?=(int)$editing->reanalyzeDays?>"></td>
 			</tr>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_LOW_BORDER'))?>: <?=$help('profile.low_border')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_LOW_BORDER_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_LOW_BORDER'))?>: <?=$help('profile.low_border')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_LOW_BORDER_DESCR'))?></span></td>
 				<td class="shef-tai-r"><input type="text" name="LOW_BORDER" size="6" value="<?=(int)$editing->lowBorder?>"></td>
 			</tr>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_HIGH_BORDER'))?>: <?=$help('profile.high_border')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_HIGH_BORDER_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_HIGH_BORDER'))?>: <?=$help('profile.high_border')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_HIGH_BORDER_DESCR'))?></span></td>
 				<td class="shef-tai-r"><input type="text" name="HIGH_BORDER" size="6" value="<?=(int)$editing->highBorder?>"></td>
 			</tr>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_SENIOR_ID'))?>: <?=$help('profile.senior_id')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_SENIOR_ID_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_SENIOR_ID'))?>: <?=$help('profile.senior_id')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_SENIOR_ID_DESCR'))?></span></td>
 				<td class="shef-tai-r"><input type="text" name="SENIOR_ID" size="6" value="<?=$editing->seniorId > 0 ? (int)$editing->seniorId : ''?>"></td>
 			</tr>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_TOTAL_CONTROL'))?>: <?=$help('profile.total_control')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_TOTAL_CONTROL_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_TOTAL_CONTROL'))?>: <?=$help('profile.total_control')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_TOTAL_CONTROL_DESCR'))?></span></td>
 				<td class="shef-tai-r"><input type="checkbox" name="TOTAL_CONTROL" value="Y"<?=$editing->totalControl ? ' checked' : ''?>></td>
 			</tr>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_NO_CONVERSATION'))?>: <?=$help('profile.no_conversation')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_NO_CONVERSATION_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_NO_CONVERSATION'))?>: <?=$help('profile.no_conversation')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_NO_CONVERSATION_DESCR'))?></span></td>
 				<td class="shef-tai-r"><input type="checkbox" name="NO_CONVERSATION" value="Y"<?=$editing->noConversation ? ' checked' : ''?>></td>
 			</tr>
 			<tr>
-				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_PROMPT'))?>: <?=$help('profile.prompt')?><br><span style="color:#777"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_PROMPT_DESCR'))?></span></td>
+				<td class="shef-tai-l"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_PROMPT'))?>: <?=$help('profile.prompt')?><br><span style="color:var(--tai-text-3)"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_F_PROMPT_DESCR'))?></span></td>
 				<td class="shef-tai-r">
 					<?php
 					$ownPrompt = trim($editing->prompt) !== '';
@@ -546,9 +546,8 @@ if($request->getQuery('saved') === 'Y' || $request->getQuery('deleted') === 'Y')
 			<a class="ui-btn ui-btn-light-border" href="<?=$h($self)?>"><?=$h(Loc::getMessage('SH_TOOLSAICRM_PROFILES_CANCEL'))?></a>
 		</div>
 		<style>
-		.shef-tai-form-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; padding-bottom: 6px; }
-		.shef-tai-prompt-view { white-space: pre-wrap; max-width: 900px; padding: 12px 14px; background: #f5f7f8; border: 1px solid #e0e5e8; border-radius: 6px; color: #333; line-height: 1.45; font: inherit; }
-		.shef-tai-prompt-area { display: block; width: 100%; max-width: 900px; min-height: 320px; box-sizing: border-box; padding: 10px 12px; border: 1px solid #c6cdd3; border-radius: 6px; font: inherit; line-height: 1.45; resize: vertical; overflow: hidden; }
+		.shef-tai-prompt-view { white-space: pre-wrap; max-width: 900px; padding: 12px 14px; background: var(--tai-surface-2); border: 1px solid var(--tai-border); border-radius: var(--tai-r-sm); color: var(--tai-text); line-height: 1.45; font: inherit; }
+		.shef-tai-prompt-area { display: block; width: 100%; max-width: 900px; min-height: 320px; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--tai-border-strong); border-radius: var(--tai-r-sm); background: var(--tai-surface); color: var(--tai-text); font: inherit; line-height: 1.45; resize: vertical; overflow: hidden; }
 		.shef-tai-prompt-area[hidden], tr[data-shef-for][hidden], select[data-shef-stages][hidden] { display: none; }
 		</style>
 	</form>

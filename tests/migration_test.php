@@ -116,9 +116,12 @@ $picked = Migration::pickOptions([
 	'CALLSCRIPT_mode' => 'rules', 'CALLSCRIPT_fallback' => '7', 'DEAL_interval' => '30', 'DEAL_maxperrun' => '10',
 ]);
 Check::same('список и префиксы, без чужого и без пустого хвоста', array_keys($picked), [
-	'ANALYSIS_interval_2', 'ANALYSIS_maxperrun_1000', 'CALLSCRIPT_fallback', 'CALLSCRIPT_mode',
-	'DEAL_crmevents', 'DEAL_enabled', 'DEAL_interval', 'DEAL_maxperrun',
+	'analysis_interval_2', 'analysis_maxperrun_1000', 'callscript_fallback', 'callscript_mode',
+	'deal_crmevents', 'deal_enabled', 'deal_interval', 'deal_maxperrun',
 ]);
+// Ядро отдаёт имена строчными (проверено на стенде): тот же набор, те же значения
+$lower = Migration::pickOptions(['deal_enabled' => 'Y', 'deal_interval' => '30', 'analysis_interval_2' => '15', 'callscript_mode' => 'rules', 'sys_token' => 's']);
+Check::same('имена строчными (как отдаёт ядро) — выбираются', $lower, ['analysis_interval_2' => '15', 'callscript_mode' => 'rules', 'deal_enabled' => 'Y', 'deal_interval' => '30']);
 
 Check::group('имена таблиц и коды настроек — как в классах и в Config');
 Check::same('приёмники — getTableName() классов', array_column(Migration::TABLES, 1), [

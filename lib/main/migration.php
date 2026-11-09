@@ -110,12 +110,13 @@ final class Migration
 		$picked = [];
 		foreach($source as $name => $value)
 		{
-			$name = (string)$name;
-			$wanted = in_array($name, self::OPTIONS, true);
+			// Ядро хранит имена настроек в нижнем регистре: сравниваем без учёта регистра, ключи отдаём строчными
+			$name = strtolower((string)$name);
+			$wanted = in_array($name, array_map('strtolower', self::OPTIONS), true);
 			foreach(self::OPTION_PREFIXES as $prefix)
 			{
 				// «ANALYSIS_interval_» без типа — не настройка типа: нужен хотя бы один знак
-				$wanted = $wanted || (str_starts_with($name, $prefix) && strlen($name) > strlen($prefix));
+				$wanted = $wanted || (str_starts_with($name, strtolower($prefix)) && strlen($name) > strlen($prefix));
 			}
 			if($wanted)
 			{
@@ -177,7 +178,7 @@ final class Migration
 		$alreadyMarked = false;
 		try
 		{
-			$alreadyMarked = ($this->port->options(Constants::MODULE_ID)[Constants::OPTION_MIGRATED] ?? '') !== '';
+			$alreadyMarked = $this->ownOption(Constants::OPTION_MIGRATED) !== '';
 		}
 		catch(\Throwable)
 		{
@@ -410,7 +411,7 @@ final class Migration
 			return ['ok' => true, 'message' => 'настроек нет — пропуск', 'had' => false, 'count' => 0];
 		}
 
-		$present = $this->port->options(Constants::MODULE_ID);
+		$present = array_change_key_case($this->port->options(Constants::MODULE_ID), CASE_LOWER);
 		$copied = 0;
 		foreach($wanted as $name => $value)
 		{
@@ -422,7 +423,7 @@ final class Migration
 			}
 		}
 
-		$after = $this->port->options(Constants::MODULE_ID);
+		$after = array_change_key_case($this->port->options(Constants::MODULE_ID), CASE_LOWER);
 		$missing = array_values(array_filter(array_keys($wanted), static fn(string $name): bool => !array_key_exists($name, $after)));
 		if($missing !== [])
 		{
@@ -432,6 +433,12 @@ final class Migration
 		return ['ok' => true, 'message' => 'настроек '.count($wanted).', добавлено '.$copied.', своих оставлено '.(count($wanted) - $copied), 'had' => true, 'count' => count($wanted)];
 	}
 
+	/** Значение своей настройки; имя — без учёта регистра (ядро хранит строчными). */
+	private function ownOption(string $name): string
+	{
+		return (string)(array_change_key_case($this->port->options(Constants::MODULE_ID), CASE_LOWER)[strtolower($name)] ?? '');
+	}
+
 	/**
 	 * Поставить отметки. Прежняя отметка этого модуля сохраняется (время первого переноса).
 	 *
@@ -439,8 +446,7 @@ final class Migration
 	 */
 	private function mark(array $counts): string
 	{
-		$own = $this->port->options(Constants::MODULE_ID);
-		$stamp = (string)($own[Constants::OPTION_MIGRATED] ?? '');
+		$stamp = $this->ownOption(Constants::OPTION_MIGRATED);
 		if($stamp === '')
 		{
 			$stamp = self::stamp($this->port->now(), $counts);

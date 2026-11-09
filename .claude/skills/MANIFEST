@@ -1,0 +1,36 @@
+# Навыки линейки shef.*
+#
+# Источник: https://github.com/bx-shef/skills, каталог skills/ (коммит — в SOURCE)
+# Здесь — копия. Правят навыки ТОЛЬКО в источнике, сюда их раскладывает
+# update.sh. Правка копии на месте будет затёрта следующей раскладкой,
+# а до неё — поймана проверкой.
+#
+#   .claude/skills/sync.sh --check            целостность копии
+#   .claude/skills/sync.sh --check <источник> сверка с источником
+#
+# Обновить: .claude/skills/update.sh; сверить: update.sh --verify
+#
+cbc427061ee493e421ad9a25eb0d1779899552525e9cb5579b133c948c066f81  shef-feedback/SKILL.md
+b6596075ca08ac956c98b9cbeef3724f9dd2c610e6f34d215ec503099f13a91c  shef-feedback/evals/selection.json
+735e2d80234dd79282a75d54c3a5103b980a4f38bae109435d420392d1f758c8  shef-new-agent/SKILL.md
+81494d50fc3ac927435a894916f9657f2a31db8cdd6db5ab612fbe930cfe10cd  shef-new-agent/evals/selection.json
+ed257bb1c1581d6bfe3a7e15716f00945af396ac29f50c7a6f92ce14385ab531  shef-new-ajax-action/SKILL.md
+d4bb4814e9b051ee5f771a6e779485a5d68d41b9959db83436e3dec84fcd62ac  shef-new-ajax-action/evals/selection.json
+0efa2abac0a6179352fbaed0acb8320c6ef5a659f5c14723974e38cf3989e4bd  shef-new-component/SKILL.md
+297eae00e59e3c30f86309c0fba4078b3afacb6436a7714753ca89e81dba5531  shef-new-component/evals/selection.json
+80a78e0effba0cbcf12d22ff43c8355244953ea7f4571d75ea4aeea3094f604f  shef-new-module/SKILL.md
+5580b26381cfcb0243f2c0747867833871ea8c724af40290f84a357d50ba9893  shef-new-module/evals/selection.json
+0fe679b59039ee244e89b17c436a4b0a954ca009756eac15e03acbffca6f9afc  shef-new-option/SKILL.md
+e9248bcb8a2c3199ec6f1c9a18e36b14ee451c11f2efab1735312be053544841  shef-new-option/evals/selection.json
+c81d14bd218767f3448ec9a95b961a618b262a57594abcced9fe0db9e1bc1e6e  shef-options-blocks/SKILL.md
+131041fe7b01a3f1d2a90f1d4e16624cb9af9f3c9161de8a85fba15e688063e9  shef-options-components/SKILL.md
+eb022968c69abed7108a796abf5da2f22c6abd0e48d604a78b431b5cc207e622  shef-options-installer/SKILL.md
+86ed3444629498752562ab6a4e5152d7addfd75d1de160de11415be54e19c5d8  shef-options-installer/evals/selection.json
+c79e90028c5d0eda00588e6c814436e385ac6958f070b32b4aeaedb75f1680e0  shef-options-settings/SKILL.md
+501b36ae2c3a85e273eb4f484d8aa17f7a69b63e5d7e28fd83e3db25b28b288b  shef-options-traits/SKILL.md
+b57ffa900e333b485a392e126516ace6ff0a1ebabe7cc16e4df5f8a7f72e01b1  shef-options-traits/evals/selection.json
+e0636af9afe972593349bd6cb0594e7efde629adce6b7e4bbf5b85db1a4d1a9f  shef-use-component/SKILL.md
+6d43df03f4818775c4ee9e11ec3cbad05a9d30c6775ca67e0e87bc6baa0acaee  shef-use-component/evals/selection.json
+9e6119dc41336ff8963a90dc8eebcec2d1e4a6d7465f7854a30ca755e493d52b  shef-use-logger/SKILL.md
+74094b8622e93253d3e349ef4a39ec75a4a6b7ce905ac04d04cc82862395bce5  shef-use-logger/evals/selection.json
+592a68cdda13b5a0ffcb34f514a84159353bbde9fb6629e63091f8ec37087e95  sync.sh

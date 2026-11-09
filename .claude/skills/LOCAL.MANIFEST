@@ -1,0 +1,12 @@
+# Локальные навыки этого репозитория — их нет в источнике линейки.
+#
+# Правят их здесь. sync.sh --to их не трогает, --check сверяет с диском.
+# Пересобрать: .claude/skills/sync.sh --local
+#
+ae832c7d491d0d2a7304a75f9ae6ac43c966e38bec80695f011c30b6f8b65bb4  README.md
+1d5cdf8adef7eba1cb4b7bc37af361f83ee35666d861eaadf7aef51b6cb8c5bd  SOURCE
+d57d596ef4a7e11e1ff45363a42096ca714cb678be89a31cd500121f594d41cb  merge-pr/SKILL.md
+ab6d098c5beccaed159192333cb03eb4ba22b16deb3c0c7179088d9711e2723f  merge-pr/evals/selection.json
+ec6875e401282d1375058ed72cff0b7ddcd9ce4b59815e3de8b829c9e83fcef6  review-panel/SKILL.md
+b7a7fe2e4e37470156ed67dd4a88f65a6b82ca652ec7d25287f42be92fcf9b41  review-panel/evals/selection.json
+1415b9faa12293ad2fe153ccc011f6a122e0c9b70c25d8b36991a7af1689198d  update.sh

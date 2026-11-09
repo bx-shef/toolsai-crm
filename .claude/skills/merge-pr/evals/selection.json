@@ -1,0 +1,7 @@
+[
+ {"input": "PR одобрен, CI зелёный — мержи", "expected": "merge-pr"},
+ {"input": "готовимся к мержу: проверь чек-лист и напиши сообщение сквоша", "expected": "merge-pr"},
+ {"input": "выложи новую версию toolsai в портал клиента", "expected": "merge-pr"},
+ {"input": "сделай ревью PR панелью из пяти", "expected": "review-panel"},
+ {"input": "переведи этот абзац на английский", "expected": "<none>"}
+]

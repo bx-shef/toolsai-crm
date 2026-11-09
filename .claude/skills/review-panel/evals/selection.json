@@ -1,0 +1,10 @@
+[
+ {"input": "проверь PR про письма в CRM перед мержем, собери панель", "expected": "review-panel"},
+ {"input": "PR доработан по замечаниям — прогони ревью ещё раз", "expected": "review-panel"},
+ {"input": "запусти пять проверяющих на этот PR с квотой", "expected": "review-panel"},
+ {"input": "какой уровень ревью у моего PR, нужна ли панель из пяти", "expected": "review-panel"},
+ {"input": "PR правит только документацию — нужно ли ревью", "expected": "review-panel"},
+ {"input": "всё зелёное, мержи PR и закрывай issue", "expected": "merge-pr"},
+ {"input": "добавь в toolsai провайдера GigaChat для резюме звонков", "expected": "shef-new-ai-provider"},
+ {"input": "какая погода будет завтра в Минске", "expected": "<none>"}
+]

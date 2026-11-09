@@ -1,0 +1,142 @@
+# Проверки репозитория. Всё, что здесь гоняется, гоняется через ./build.sh —
+# чтобы локальный прогон и прогон в CI не могли разойтись.
+#
+# В защите ветки требуется ровно ОДНА проверка — CI. Остальные задачи её
+# зависимости, поэтому новая задача не потребует правки ruleset.
+# Апрувов — ноль: в репозитории один человек, свой PR апрувить нельзя,
+# единица заперла бы репозиторий.
+
+name: CI
+
+# Только PR и ручной запуск: на push в main публиковать нечего, а мерж уже
+# проверен на PR (bx-shef/toolsai#312, экономия минут в приватном репозитории).
+# На PR — крайние версии PHP, полная матрица — раз в неделю по расписанию.
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 4 * * 1'
+
+# Вытесняем устаревшие прогоны одной и той же ветки.
+#
+# ⚠ Побочный эффект вместе с always() у задачи ci: вытесненный прогон краснеет
+# на устаревшем коммите. Это шум, а не поломка — защита ветки смотрит на
+# проверки ГОЛОВНОГО коммита. Не «чинить».
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      # Нужен результат по каждой версии, а не по первой упавшей.
+      fail-fast: false
+      matrix:
+        # PR и ручной запуск — мин и макс, расписание — все версии.
+        php: ${{ github.event_name == 'schedule' && fromJSON('["8.2", "8.3", "8.4", "8.5"]') || fromJSON('["8.2", "8.5"]') }}
+    steps:
+      - name: Забрать репозиторий
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # глубина 2: слияние PR и его родители; база сравнения — первый родитель (HEAD^1), для шага «Уровень ревью PR»
+
+      # Уровень ревью PR (tools/review-tier.sh): справочно, ничего не блокирует; CI не знает, проведено ли ревью.
+      # continue-on-error не снимать без решения владельца. Правила — tools/review-tier.rules.
+      - name: Уровень ревью PR
+        if: github.event_name == 'pull_request' && matrix.php == '8.2'
+        continue-on-error: true
+        run: |
+          action="$(bash tools/review-tier.sh --base HEAD^1 --action)"
+          printf '%s\n' "$action"
+          {
+            echo '### Уровень ревью PR (справочно: проведено ли ревью, CI не проверяет)'
+            printf '%s\n\n' "$action"
+            echo 'По файлам — локально: `bash tools/review-tier.sh --explain`'
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Поставить PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring
+          coverage: none
+
+      - name: Проверки
+        run: ./build.sh --check
+
+  # Composer, Skills и Build слиты в одну задачу: каждая шла секунды, а
+  # оплачивается минимум минутой. Проверки те же, шагами.
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Забрать репозиторий
+        uses: actions/checkout@v4
+
+      - name: Поставить PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          # Нижняя граница поддержки: собираем тем же, чем разрешаем ставить.
+          php-version: '8.2'
+          extensions: mbstring
+          coverage: none
+          tools: composer
+
+      # Пакет ставят через Composer, и сломанный composer.json виден только
+      # у того, кто ставит. --strict: предупреждение тоже провал.
+      - name: composer validate
+        run: composer validate --strict --no-check-lock
+
+      # Навыки линейки здесь — копия bx-shef/skills на коммите из
+      # .claude/skills/SOURCE. Целостность копии проверяет и
+      # sync.sh --check, а эта задача — что копия ровно та, что в
+      # источнике на этом коммите. Покраснела — .claude/skills/update.sh,
+      # не правьте копию руками.
+      - name: Навыки совпадают с источником
+        run: .claude/skills/update.sh --verify
+
+      - name: Собрать архив
+        run: ./build.sh
+
+      - name: Прочитать версию модуля
+        id: version
+        run: echo "value=$(./build.sh --version)" >> "$GITHUB_OUTPUT"
+
+      - name: Приложить архив к прогону
+        uses: actions/upload-artifact@v4
+        with:
+          name: shef.toolsaicrm-${{ steps.version.outputs.value }}
+          path: shef.toolsaicrm.zip
+          # Пустой артефакт означал бы, что сборка молча ничего не собрала.
+          if-no-files-found: error
+
+  ci:
+    name: CI
+    needs: [checks, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # ⚠ Обязательно вместе с проверкой результатов ниже. Без always() задача
+    # была бы ПРОПУЩЕНА при падении зависимости, а пропущенную проверку защита
+    # ветки засчитывает как ПРОЙДЕННУЮ — красный CI уехал бы в main.
+    #
+    # Подмывает заменить на !cancelled() — не надо: отменённый прогон стал бы
+    # давать пропущенную проверку, и, отменив прогон вручную, можно было бы
+    # смержить непроверенное.
+    if: always()
+    steps:
+      - name: Сверить результаты зависимостей
+        run: |
+          if [ "${{ needs.checks.result }}" != 'success' ] \
+          || [ "${{ needs.build.result }}" != 'success' ]
+          then
+            echo '::error::Не прошла одна из зависимостей'
+            exit 1
+          fi

@@ -190,7 +190,9 @@ $report = $failing->prepare($portal.'/www', $root);
 Check::same('шаг агентов не ок', $report['analysis agents']['ok'], false);
 Check::same('агенты остались', CAgent::$agents, $agentsBefore);
 
-Check::group('prepare: перенос не сошёлся — установка не падает');
+Check::group('prepare: перенос не сошёлся — установка не падает, агенты/подписки/робот закрыты');
+CAgent::reset();
+EventManager::$registered = [];
 $bad = new MemoryPort();
 $bad->addTable('shef_toolsai_deal_profile', ['ID', 'IS_ENABLED', 'ENTITY_TYPE_ID'], [['ID' => 1, 'IS_ENABLED' => 'Y', 'ENTITY_TYPE_ID' => 2], ['ID' => 2, 'IS_ENABLED' => 'Y', 'ENTITY_TYPE_ID' => 2]]);
 $bad->addTable('shef_toolsaicrm_deal_profile', ['ID', 'IS_ENABLED', 'ENTITY_TYPE_ID']);
@@ -198,7 +200,12 @@ $bad->lossy = true;
 $report = (new Setup($config(), $bad, static fn(): array => []))->prepare($portal.'/www', $root);
 Check::same('сверка таблицы — не ок', $report['migrate shef_toolsai_deal_profile']['ok'], false);
 Check::same('отметок нет', isset($bad->options['shef.toolsai'][Constants::CORE_OPTION_MIGRATED]), false);
-Check::same('остальные шаги прошли', [$report['tables']['ok'], $report['events']['ok']], [true, true]);
+Check::same('таблицы прошли', $report['tables']['ok'], true);
+Check::same('перенос не улажен: сказано в отчёте', [$report['migration']['ok'], $report['migration']['message']], [false, Setup::MIGRATION_PENDING]);
+Check::same('подписки вида не регистрируются до отметки', [$report['events']['warn'] ?? null, count(EventManager::$registered)], [true, 0]);
+Check::same('агенты анализа не регистрируются до отметки', [$report['analysis agents']['warn'] ?? null, array_values(array_filter($names('shef.toolsaicrm'), static fn(string $n): bool => str_contains($n, 'AnalysisAgent')))], [true, []]);
+Check::same('робот БП не пишется до отметки', array_values(array_filter(array_keys($report), static fn(string $step): bool => str_contains($step, 'shtoolsaianalyzeactivity'))), []);
+Check::same('остальные заглушки на месте', $report['file /shef/toolsaicrm/index.php']['ok'], true);
 
 Check::group('prepare: подписки не встали у ядра — шаг не ок');
 EventManager::$stubHandlers = [];
@@ -259,8 +266,8 @@ ModuleManager::$installed = ['shef.toolsaicrm'];
 $setup = new Setup($config(), new MemoryPort(), static fn(): array => [$profile(2, true), $profile(1, false)]);
 $report = Maintenance::ensure($portal2, $root, $setup);
 Check::same('все шаги успешны', array_filter($report, static fn(bool $ok): bool => !$ok), []);
-Check::same('шаги: events, tables, agents и пять заглушек', array_keys($report), [
-	'events', 'tables', 'agents',
+Check::same('шаги: tables, migration, events, agents и пять заглушек', array_keys($report), [
+	'tables', 'migration', 'events', 'agents',
 	'file /shef/toolsaicrm/index.php',
 	'file /local/components/shef/toolsaicrm.settings/component.php',
 	'file /local/components/shef/toolsaicrm.settings/ajax.php',
@@ -273,6 +280,32 @@ Check::same('создано пять таблиц', count(array_filter($sql->que
 Check::same('заглушка страницы на месте', is_file($portal2.'/shef/toolsaicrm/index.php') || is_file($portal2.'/shef/toolsaicrm/index.php'), true);
 Maintenance::ensure($portal2, $root, $setup);
 Check::same('повтор: агентов столько же', $names('shef.toolsaicrm'), [Maintenance::AGENT_NAME, $agentName(2)]);
+
+Check::group('Maintenance: перенос не сошёлся — шаг migration не ок, агенты, подписки и робот закрыты; повтор после исправления открывает');
+CAgent::reset();
+EventManager::$registered = [];
+$portal3 = $portal.'/www3';
+mkdir($portal3.'/bitrix/activities', 0777, true);
+$lossy = new MemoryPort();
+$lossy->addTable('shef_toolsai_deal_profile', ['ID', 'IS_ENABLED', 'ENTITY_TYPE_ID'], [['ID' => 1, 'IS_ENABLED' => 'Y', 'ENTITY_TYPE_ID' => 2], ['ID' => 2, 'IS_ENABLED' => 'Y', 'ENTITY_TYPE_ID' => 2]]);
+$lossy->addTable('shef_toolsaicrm_deal_profile', ['ID', 'IS_ENABLED', 'ENTITY_TYPE_ID']);
+$lossy->lossy = true;
+$unsettled = new Setup($config(), $lossy, static fn(): array => [$profile(2, true)]);
+$report = Maintenance::ensure($portal3, $root, $unsettled);
+Check::same('migration не ок (повтор через RETRY)', $report['migration'], false);
+Check::same('events и agents не запускались', [isset($report['events']), isset($report['agents'])], [false, false]);
+Check::same('подписки не регистрировались', EventManager::$registered, []);
+Check::same('агентов анализа нет', array_values(array_filter($names('shef.toolsaicrm'), static fn(string $n): bool => str_contains($n, 'AnalysisAgent'))), []);
+Check::same('робот БП не пишется', array_values(array_filter(array_keys($report), static fn(string $step): bool => str_contains($step, 'shtoolsaianalyzeactivity'))), []);
+Check::same('файла робота нет', is_file($portal3.'/bitrix/activities/custom/shtoolsaianalyzeactivity/.description.php'), false);
+Check::same('страница модуля на месте', $report['file /shef/toolsaicrm/index.php'], true);
+$lossy->lossy = false;
+$report = Maintenance::ensure($portal3, $root, $unsettled);
+Check::same('исправили — всё ок и отмечено', [array_filter($report, static fn(bool $ok): bool => !$ok), isset($lossy->options['shef.toolsai'][Constants::CORE_OPTION_MIGRATED])], [[], true]);
+Check::same('агент анализа открыт', in_array($agentName(2), $names('shef.toolsaicrm'), true), true);
+Check::same('робот на месте', is_file($portal3.'/bitrix/activities/custom/shtoolsaianalyzeactivity/.description.php'), true);
+CAgent::reset();
+$seedHandlers();
 
 Check::group('Maintenance: шаги независимы, сбой одного не мешает остальным');
 EventManager::$stubHandlers = [];

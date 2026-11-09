@@ -32,8 +32,7 @@ final class CrmWrite
 	public const SOURCE_ANALYSIS = 'analysis';
 	public const SOURCE_FLAG = 'flag';
 	public const SOURCE_CONVERSION = 'conversion';
-	public const SOURCE_CALLTAGS = 'calltags';
-	public const SOURCES = [self::SOURCE_ANALYSIS, self::SOURCE_FLAG, self::SOURCE_CONVERSION, self::SOURCE_CALLTAGS];
+	public const SOURCES = [self::SOURCE_ANALYSIS, self::SOURCE_FLAG, self::SOURCE_CONVERSION];
 
 	/** Причины отказа (текст — для журнала и «последних проверок»). */
 	public const NO_CRM = 'модуль CRM не подключён';

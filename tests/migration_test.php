@@ -215,15 +215,22 @@ Check::same('таблицы приёмника не изменились (кро
 Check::same('отметка — время первого переноса', $port->options['shef.toolsaicrm'][Constants::OPTION_MIGRATED], $stamp);
 Check::same('агенты не снимались второй раз', $port->deletedAgents, [10, 11, 12]);
 
-Check::group('повтор добирает недостающее');
+Check::same('отметка стоит: во второй раз ничего не копировалось', $port->batches, []);
+
+Check::group('отметка стоит: строки не копируются повторно (удалённое в модуле не возвращается), настройки добираются');
+$port->tables[T_DST_CHECK]['rows'] = array_values(array_filter($port->tables[T_DST_CHECK]['rows'], static fn(array $row): bool => $row['ID'] !== 11)); // удалено в модуле
+$port->tables[T_DST_PROMPT]['rows'] = array_values(array_filter($port->tables[T_DST_PROMPT]['rows'], static fn(array $row): bool => $row['CODE'] !== 'analysis.lead'));
 $port->options['shef.toolsai']['ANALYSIS_interval_3'] = '33';
 $port->tables[T_SRC_CHECK]['rows'][] = ['ID' => 13, 'ENTITY_TYPE_ID' => 2, 'ENTITY_ID' => 102, 'RISK' => 1];
-$port->tables[T_SRC_PROMPT]['rows'][] = ['ID' => 8, 'CODE' => 'analysis.dynamic', 'SYSTEM_TEXT' => 'смарт'];
+$port->batches = [];
 $third = (new Migration($port))->run();
 Check::same('ок', $third['ok'], true);
-Check::same('новая строка добрана', $ids($port, T_DST_CHECK), [10, 11, 12, 13]);
+Check::same('отметка на месте, перенос улажен', [$third['marked'], $third['settled']], [true, true]);
+Check::same('удалённая строка не вернулась, новая из источника не скопирована', $ids($port, T_DST_CHECK), [10, 12]);
+Check::same('удалённый промпт не вернулся', array_column($port->rows(T_DST_PROMPT), 'CODE'), ['analysis.deal']);
+Check::same('пакетов копии нет', $port->batches, []);
 Check::same('новая настройка добрана', $port->options['shef.toolsaicrm']['ANALYSIS_interval_3'], '33');
-Check::same('новый промпт добран', array_column($port->rows(T_DST_PROMPT), 'CODE'), ['analysis.deal', 'analysis.lead', 'analysis.dynamic']);
+Check::same('настройка администратора цела', $port->options['shef.toolsaicrm']['DEAL_interval'], '120');
 
 Check::group('повтор: приёмник уже занял ID другой строкой — ID источника не затирает чужое');
 $port = $fixture();
@@ -261,20 +268,42 @@ Check::same('установка не падает: исключения нет, 
 
 Check::group('сверка не сошлась: прежняя отметка снимается');
 $port = $fixture();
-(new Migration($port))->run();
-Check::same('(отметка стояла)', isset($port->options['shef.toolsai'][Constants::CORE_OPTION_MIGRATED]), true);
-$port->tables[T_SRC_CHECK]['rows'][] = ['ID' => 50, 'ENTITY_TYPE_ID' => 2, 'ENTITY_ID' => 9, 'RISK' => 3];
+// в shef.toolsai осталась отметка (своей нет): сверка не сошлась — она снимается
+$port->options['shef.toolsai'][Constants::CORE_OPTION_MIGRATED] = '2026-01-01 00:00:00|stale=1';
 $port->lossy = true;
 $result = (new Migration($port))->run();
 Check::same('не ок', $result['ok'], false);
 Check::same('SYS_crm_moved снята — shef.toolsai не уберёт то, что не перенесено', isset($port->options['shef.toolsai'][Constants::CORE_OPTION_MIGRATED]), false);
 Check::same('и своя отметка снята', isset($port->options['shef.toolsaicrm'][Constants::OPTION_MIGRATED]), false);
 
-Check::group('сверка: расхождение сумм ключей — тоже отказ');
+Check::group('сверка: расхождение сумм содержимого — тоже отказ');
 Check::same('missing = 0, суммы равны', Migration::isMatched(['source' => 3, 'missing' => 0, 'sumSource' => '33', 'sumTarget' => '33']), true);
 Check::same('missing > 0', Migration::isMatched(['source' => 3, 'missing' => 1, 'sumSource' => '33', 'sumTarget' => '22']), false);
 Check::same('missing > 0, суммы случайно равны', Migration::isMatched(['source' => 3, 'missing' => 1, 'sumSource' => '33', 'sumTarget' => '33']), false);
 Check::same('missing = 0, но суммы разошлись', Migration::isMatched(['source' => 3, 'missing' => 0, 'sumSource' => '33', 'sumTarget' => '34']), false);
+
+Check::group('содержимое: ключи на месте, но значения в приёмнике другие — конфликт, отметок нет');
+$port = $fixture();
+$port->tables[T_DST_CHECK]['rows'][] = ['ID' => 10, 'ENTITY_TYPE_ID' => 2, 'ENTITY_ID' => 100, 'RISK' => 99]; // ID тот же, RISK другой
+$result = (new Migration($port))->run();
+Check::same('не ок', [$result['ok'], $result['marked'], $result['settled']], [false, false, false]);
+Check::same('нет отметок', [isset($port->options['shef.toolsaicrm'][Constants::OPTION_MIGRATED]), isset($port->options['shef.toolsai'][Constants::CORE_OPTION_MIGRATED])], [false, false]);
+Check::same('сообщение называет конфликт', str_contains($result['steps']['migrate '.T_SRC_CHECK]['message'], 'конфликт'), true);
+Check::same('чужая строка приёмника не затёрта', $port->rows(T_DST_CHECK)[0]['RISK'], 99);
+
+Check::group('содержимое: NULL и пустая строка — разные значения');
+$port = $fixture();
+$port->tables[T_SRC_CHECK]['rows'][0]['RISK'] = null;
+$port->tables[T_DST_CHECK]['rows'][] = ['ID' => 10, 'ENTITY_TYPE_ID' => 2, 'ENTITY_ID' => 100, 'RISK' => ''];
+Check::same('отказ', (new Migration($port))->run()['ok'], false);
+
+Check::group('промпты: тот же CODE, другой текст в приёмнике — конфликт');
+$port = $fixture();
+$port->tables[T_DST_PROMPT]['rows'][] = ['ID' => 1, 'CODE' => 'analysis.deal', 'SYSTEM_TEXT' => 'другой текст'];
+$result = (new Migration($port))->run();
+Check::same('не ок, не помечено', [$result['ok'], $result['marked']], [false, false]);
+Check::same('сказано про конфликт', str_contains($result['steps']['migrate '.T_SRC_PROMPT]['message'], 'конфликт'), true);
+Check::same('правка в приёмнике цела', $port->rows(T_DST_PROMPT)[0]['SYSTEM_TEXT'], 'другой текст');
 
 Check::group('нет таблицы приёмника — отказ, не пометка');
 $port = $fixture();
@@ -295,7 +324,7 @@ $broken = new class($port) implements \Shef\ToolsAiCrm\Main\MigrationPort
 	public function columns(string $table): array { return $this->inner->columns($table); }
 	public function batchEnd(string $table, ?string $codePrefix, int $fromId, int $limit): ?int { return $this->inner->batchEnd($table, $codePrefix, $fromId, $limit); }
 	public function copyRange(string $source, string $target, array $columns, string $key, ?string $codePrefix, int $fromId, int $toId): int { return $this->inner->copyRange($source, $target, $columns, $key, $codePrefix, $fromId, $toId); }
-	public function compare(string $source, string $target, string $key, ?string $codePrefix): array { return $this->inner->compare($source, $target, $key, $codePrefix); }
+	public function compare(string $source, string $target, string $key, ?string $codePrefix, array $columns): array { return $this->inner->compare($source, $target, $key, $codePrefix, $columns); }
 	public function options(string $moduleId): array { return $this->inner->options($moduleId); }
 	/** Запись настроек модуля «не доходит» (например, база только на чтение). */
 	public function setOption(string $moduleId, string $name, string $value): void { if($moduleId === 'shef.toolsai') { $this->inner->setOption($moduleId, $name, $value); } }
@@ -342,6 +371,7 @@ $result = (new Migration($port))->run();
 Check::same('ок', $result['ok'], true);
 Check::same('не помечено', $result['marked'], false);
 Check::same('«переносить нечего»', $result['steps']['migrate mark']['message'], 'переносить нечего');
+Check::same('переносить нечего — улажено (агентам можно)', $result['settled'], true);
 Check::same('ни копий, ни настроек, ни отметок', array_values(array_filter($port->log, static fn(string $l): bool => !str_starts_with($l, 'unregister '))), []);
 // endregion ////
 
@@ -353,14 +383,24 @@ $result = (new Migration($port))->run();
 Check::same('ок', $result['ok'], true);
 Check::same('ждали по секунде', $port->slept, 3);
 
-Check::group('старый прогон не кончается: копия идёт, но отметки нет');
+Check::group('старый прогон не кончается (stopOld не ok): ничего не копируется, отметок нет, сказано почему');
 $port = $fixture();
 $port->busyPolls = 1000;
 $result = (new Migration($port))->run();
 Check::same('ожидание ограничено', $port->slept, Migration::WAIT_SECONDS);
 Check::same('не ок', $result['ok'], false);
-Check::same('не помечено', $result['marked'], false);
-Check::same('данные скопированы (повтор доберёт)', $ids($port, T_DST_CHECK), [10, 11, 12]);
+Check::same('не помечено и не улажено', [$result['marked'], $result['settled']], [false, false]);
+Check::same('ни строки не скопировано', [$port->batches, $ids($port, T_DST_CHECK), $port->rows(T_DST_PROMPT)], [[], [], []]);
+Check::same('настройки не копировались', isset($port->options['shef.toolsaicrm']), false);
+Check::same('сообщение: старое не остановлено', str_contains($result['steps']['migrate mark']['message'], 'не остановлено'), true);
+Check::same('текст про ожидание честный', str_contains($result['steps']['stop old']['message'], 'при следующем запуске'), false);
+
+Check::group('stopOld упал исключением (агента не снять): копии нет');
+$port = $fixture();
+$port->failOn = 'deleteAgent';
+$result = (new Migration($port))->run();
+Check::same('не ок, не помечено', [$result['ok'], $result['marked'], $result['settled']], [false, false, false]);
+Check::same('копий нет', $port->batches, []);
 
 Check::group('сбой порта: строка отчёта, исключений нет');
 foreach(['batchEnd', 'copyRange', 'compare', 'options', 'deleteAgent'] as $method)
@@ -416,17 +456,17 @@ $sql->queries = [];
 $port->copyRange(T_SRC_PROMPT, T_DST_PROMPT, ['CODE'], 'CODE', "a_b%'", 1, 2);
 Check::same('префикс', str_contains($sql->queries[0], "LIKE 'a\\\\_b\\\\%\\'%'"), true);
 
-Check::group('SQL: сверка — LEFT JOIN по ключу');
+Check::group('SQL: сверка — LEFT JOIN по ключу и содержимое общих столбцов');
 $sql->queries = [];
 $sql->answers = [['C' => '3', 'M' => '1', 'SS' => '33', 'SD' => '22']];
-$compare = $port->compare(T_SRC_CHECK, T_DST_CHECK, 'ID', null);
-Check::same('запрос', $sql->queries[0], 'SELECT COUNT(*) AS C, COALESCE(SUM(d.ID IS NULL), 0) AS M, CAST(COALESCE(SUM(s.ID), 0) AS CHAR) AS SS, CAST(COALESCE(SUM(d.ID), 0) AS CHAR) AS SD FROM shef_toolsai_entity_check s LEFT JOIN shef_toolsaicrm_entity_check d ON d.ID = s.ID WHERE 1 = 1');
+$compare = $port->compare(T_SRC_CHECK, T_DST_CHECK, 'ID', null, ['ID', 'RISK']);
+$side = static fn(string $a): string => "CRC32(CONCAT_WS('|', IF($a.ID IS NULL, 'N', CONCAT('V', $a.ID)), IF($a.RISK IS NULL, 'N', CONCAT('V', $a.RISK))))";
+Check::same('запрос', $sql->queries[0], 'SELECT COUNT(*) AS C, COALESCE(SUM(d.ID IS NULL), 0) AS M, CAST(COALESCE(SUM('.$side('s').'), 0) AS CHAR) AS SS, CAST(COALESCE(SUM(IF(d.ID IS NULL, NULL, '.$side('d').')), 0) AS CHAR) AS SD FROM shef_toolsai_entity_check s LEFT JOIN shef_toolsaicrm_entity_check d ON d.ID = s.ID WHERE 1 = 1');
 Check::same('ответ разобран', $compare, ['source' => 3, 'missing' => 1, 'sumSource' => '33', 'sumTarget' => '22']);
 $sql->queries = [];
 $sql->answers = [['C' => '2', 'M' => '0', 'SS' => '10', 'SD' => '10']];
-$port->compare(T_SRC_PROMPT, T_DST_PROMPT, 'CODE', 'analysis.');
-Check::same('для CODE — CRC32 и префикс', $sql->queries[0], "SELECT COUNT(*) AS C, COALESCE(SUM(d.CODE IS NULL), 0) AS M, CAST(COALESCE(SUM(CRC32(s.CODE)), 0) AS CHAR) AS SS, CAST(COALESCE(SUM(CRC32(d.CODE)), 0) AS CHAR) AS SD FROM shef_toolsai_prompt s LEFT JOIN shef_toolsaicrm_prompt d ON d.CODE = s.CODE WHERE 1 = 1 AND s.CODE LIKE 'analysis.%'");
-
+$port->compare(T_SRC_PROMPT, T_DST_PROMPT, 'CODE', 'analysis.', ['CODE', 'SYSTEM_TEXT']);
+Check::same('для CODE — пара по CODE, содержимое и префикс', $sql->queries[0], "SELECT COUNT(*) AS C, COALESCE(SUM(d.CODE IS NULL), 0) AS M, CAST(COALESCE(SUM(CRC32(CONCAT_WS('|', IF(s.CODE IS NULL, 'N', CONCAT('V', s.CODE)), IF(s.SYSTEM_TEXT IS NULL, 'N', CONCAT('V', s.SYSTEM_TEXT))))), 0) AS CHAR) AS SS, CAST(COALESCE(SUM(IF(d.CODE IS NULL, NULL, CRC32(CONCAT_WS('|', IF(d.CODE IS NULL, 'N', CONCAT('V', d.CODE)), IF(d.SYSTEM_TEXT IS NULL, 'N', CONCAT('V', d.SYSTEM_TEXT)))))), 0) AS CHAR) AS SD FROM shef_toolsai_prompt s LEFT JOIN shef_toolsaicrm_prompt d ON d.CODE = s.CODE WHERE 1 = 1 AND s.CODE LIKE 'analysis.%'");
 Check::group('SQL: конец пакета');
 $sql->queries = [];
 $sql->answers = [['E' => '1000']];

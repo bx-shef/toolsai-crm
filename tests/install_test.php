@@ -234,6 +234,7 @@ Check::group('удаление: предупреждение про робото
 Check::same('в тексте формы', str_contains((string)Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'), 'роботы бизнес-процессов'), true);
 Check::same('про сохранение данных', str_contains((string)Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'), 'Сохранить данные'), true);
 Check::same('про поля «AI: …»', str_contains((string)Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'), 'Поля «AI: …»'), true);
+Check::same('про тип поля без зарегистрированного обработчика и значения текстом', [str_contains((string)Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'), 'без зарегистрированного обработчика'), str_contains((string)Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'), 'значения полей «AI: …» текстом')], [true, true]);
 // endregion ////
 
 // region Язык ////

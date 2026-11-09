@@ -60,16 +60,25 @@ final class CoreMigrationPort implements MigrationPort
 		return (int)$connection->getAffectedRowsCount();
 	}
 
-	public function compare(string $source, string $target, string $key, ?string $codePrefix): array
+	public function compare(string $source, string $target, string $key, ?string $codePrefix, array $columns): array
 	{
-		// Для CODE сумма — по CRC32: число, которое можно складывать
-		$expr = static fn(string $alias): string => $key === 'CODE' ? 'CRC32('.$alias.'.CODE)' : $alias.'.'.$key;
+		// Содержимое строки: общие столбцы через «|»; NULL — отдельным знаком, чтобы не сливался с пустой строкой
+		$content = static function(string $alias) use ($columns): string
+		{
+			$parts = array_map(
+				static fn(string $column): string => sprintf("IF(%1\$s.%2\$s IS NULL, 'N', CONCAT('V', %1\$s.%2\$s))", $alias, $column),
+				$columns
+			);
+
+			return "CRC32(CONCAT_WS('|', ".implode(', ', $parts).'))';
+		};
+		// У приёмника без пары строки нет (d.<ключ> IS NULL): её вклад — NULL, SUM его пропускает
 		$row = Application::getConnection()->query(sprintf(
-			'SELECT COUNT(*) AS C, COALESCE(SUM(d.%1$s IS NULL), 0) AS M, CAST(COALESCE(SUM(%2$s), 0) AS CHAR) AS SS, CAST(COALESCE(SUM(%3$s), 0) AS CHAR) AS SD'
+			'SELECT COUNT(*) AS C, COALESCE(SUM(d.%1$s IS NULL), 0) AS M, CAST(COALESCE(SUM(%2$s), 0) AS CHAR) AS SS, CAST(COALESCE(SUM(IF(d.%1$s IS NULL, NULL, %3$s)), 0) AS CHAR) AS SD'
 			.' FROM %4$s s LEFT JOIN %5$s d ON d.%1$s = s.%1$s WHERE 1 = 1%6$s',
 			$key,
-			$expr('s'),
-			$expr('d'),
+			$content('s'),
+			$content('d'),
 			$source,
 			$target,
 			$this->like($codePrefix, 's.')

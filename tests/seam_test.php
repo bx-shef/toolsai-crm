@@ -181,4 +181,52 @@ foreach($soft as $path)
 }
 Check::same('классы shef.toolsai в коде (use, new, ::) не используются (файлов: '.count($soft).')', $bad, []);
 
+Check::group('.settings.php: классы модуля, названные строкой, существуют');
+
+/** Файл класса по соглашению ядра: Shef\ToolsAiCrm\A\B\C → lib/a/b/c.php, внутри — class C. */
+$settingsClassFile = static function(string $class) use ($root): ?string
+{
+	$parts = explode('\\', ltrim($class, '\\'));
+	array_shift($parts); // Shef
+	array_shift($parts); // ToolsAiCrm
+	$path = 'lib/'.strtolower(implode('/', $parts)).'.php';
+	if(!is_file($root.'/'.$path))
+	{
+		return null;
+	}
+
+	return preg_match('/^\s*(?:final\s+|abstract\s+)*(?:class|interface|trait)\s+'.preg_quote((string)end($parts), '/').'\b/mi', (string)file_get_contents($root.'/'.$path)) === 1 ? $path : null;
+};
+$settings = require $root.'/.settings.php';
+$settingsStrings = [];
+$walk = static function(mixed $node, string $path) use (&$walk, &$settingsStrings): void
+{
+	if(is_array($node))
+	{
+		foreach($node as $key => $value)
+		{
+			$walk($value, $path.'/'.$key);
+		}
+	}
+	elseif(is_string($node) && preg_match('/^\\\\?Shef\\\\ToolsAiCrm\\\\[A-Za-z0-9_\\\\]+$/', $node) && !str_starts_with($path, '/controllers/'))
+	{
+		$settingsStrings[$path] = $node;
+	}
+};
+$walk($settings, '');
+Check::same('строки-классы в .settings.php найдены (обработчики событий)', count($settingsStrings) >= 10, true);
+$missing = [];
+foreach($settingsStrings as $path => $class)
+{
+	if($settingsClassFile($class) === null)
+	{
+		$missing[] = $path.' → '.$class;
+	}
+}
+Check::same('класс есть: файл по соглашению и объявление', $missing, []);
+Check::same('разбор: несуществующий класс не находится, существующий — находится', [
+	$settingsClassFile('Shef\\ToolsAiCrm\\Integration\\Ui\\EntitySelector\\PlaceProvider'),
+	$settingsClassFile('\\Shef\\ToolsAiCrm\\Deal\\Field\\AckType'),
+], [null, 'lib/deal/field/acktype.php']);
+
 Check::finish();

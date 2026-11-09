@@ -82,13 +82,19 @@ class PublicPage
 	/**
 	 * Положить все заглушки.
 	 *
+	 * @param bool $withRobot класть и робота БП; нет — перенос данных из shef.toolsai не завершён,
+	 *        заглушка робота остаётся прежней (она ведёт в shef.toolsai) и не трогается
 	 * @return array<string, bool> заглушка => на месте и своя
 	 */
-	public static function installAll(string $documentRoot, string $moduleDir): array
+	public static function installAll(string $documentRoot, string $moduleDir, bool $withRobot = true): array
 	{
 		$report = [];
 		foreach(static::getList() as $page)
 		{
+			if(!$withRobot && str_starts_with($page->file, Constants::ROBOT_ANALYZE_DIR.'/'))
+			{
+				continue;
+			}
 			$report[$page->file] = $page->install($documentRoot, $moduleDir);
 		}
 
@@ -96,19 +102,55 @@ class PublicPage
 	}
 
 	/**
-	 * Убрать свои заглушки (с конца списка).
+	 * Убрать свои заглушки (с конца списка). Заглушки робота БП: если у shef.toolsai есть
+	 * переходная заглушка (legacyRobotModuleDir()), они возвращаются на неё, а не удаляются —
+	 * схемы бизнес-процессов не остаются со ссылкой в пустоту.
 	 *
-	 * @return array<string, bool> заглушка => своей больше нет
+	 * @return array<string, bool> заглушка => своей больше нет (у возвращённых на shef.toolsai — стоит прежняя)
 	 */
 	public static function uninstallAll(string $documentRoot, string $moduleDir = ''): array
 	{
+		$legacyDir = static::legacyRobotModuleDir($documentRoot, $moduleDir);
 		$report = [];
 		foreach(array_reverse(static::getList()) as $page)
 		{
-			$report[$page->file] = $page->uninstall($documentRoot, $moduleDir);
+			$report[$page->file] = $legacyDir !== null && $page->legacyModules !== []
+				? $page->install($documentRoot, $legacyDir)
+				: $page->uninstall($documentRoot, $moduleDir);
 		}
 
 		return $report;
+	}
+
+	/**
+	 * Каталог shef.toolsai с переходной заглушкой робота: на месте и описание
+	 * (activities/analyze/.description.php), и класс (shtoolsaianalyzeactivity.php). Ищется рядом
+	 * с этим модулем, затем в /bitrix/modules и /local/modules. Нет — null (заглушку робота удалять).
+	 */
+	public static function legacyRobotModuleDir(string $documentRoot, string $moduleDir): ?string
+	{
+		if($moduleDir === '')
+		{
+			return null;
+		}
+		$root = rtrim(str_replace('\\', '/', $documentRoot), '/');
+		$candidates = [
+			dirname(rtrim(str_replace('\\', '/', $moduleDir), '/')).'/'.self::LEGACY_MODULE_ID,
+			$root.'/bitrix/modules/'.self::LEGACY_MODULE_ID,
+			$root.'/local/modules/'.self::LEGACY_MODULE_ID,
+		];
+		foreach($candidates as $dir)
+		{
+			if(
+				is_file($dir.Constants::ROBOT_ANALYZE_MODULE_DIR.'/.description.php')
+				&& is_file($dir.Constants::ROBOT_ANALYZE_MODULE_DIR.'/shtoolsaianalyzeactivity.php')
+			)
+			{
+				return $dir;
+			}
+		}
+
+		return null;
 	}
 
 	public function getTarget(string $documentRoot): string
@@ -140,7 +182,6 @@ class PublicPage
 	 * Своя заглушка: та, что модуль написал бы сейчас из $moduleDir (каталог
 	 * может называться иначе — клон репозитория), либо require на
 	 * .../shef.toolsaicrm<страница модуля> от корня сайта или абсолютным путём.
-	 * У робота БП — ещё и на .../shef.toolsai<страница> (заглушка до выноса анализа).
 	 * У робота БП — ещё и на .../shef.toolsai<страница> (заглушка до выноса анализа).
 	 */
 	public function isOwn(string $content, string $documentRoot = '', string $moduleDir = ''): bool

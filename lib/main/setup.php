@@ -31,6 +31,9 @@ use Shef\ToolsAiCrm\Deal\Profile;
  */
 final class Setup
 {
+	/** Сообщение «Проверить и включить», пока перенос данных не сошёлся. */
+	public const MIGRATION_PENDING = 'перенос данных из shef.toolsai не завершён: агенты анализа, подписки поля «AI: …» и робот БП не включены, старые данные не тронуты. Причина — в строках «migrate …» выше; после исправления нажмите «Проверить и включить» ещё раз (доведение повторяет перенос каждые 10 минут)';
+
 	/** Таблицы модуля: init() создаёт недостающее и дописывает столбцы. */
 	public const TABLES = [
 		DealProfileTable::class,
@@ -42,6 +45,9 @@ final class Setup
 
 	/** @var \Closure(): Profile[] */
 	private readonly \Closure $profiles;
+
+	/** Перенос из shef.toolsai улажен (отмечен либо переносить нечего); до первого migrate() — нет. */
+	private bool $settled = false;
 
 	/**
 	 * @param (\Closure(): Profile[])|null $profiles все профили анализа; null — из таблицы (тесты подставляют свои)
@@ -84,22 +90,39 @@ final class Setup
 			$report[$step] = $row;
 		}
 
-		$report['events'] = $this->ensureEvents($moduleDir);
+		// Перенос не отмечен, а в shef.toolsai есть что переносить: агентов анализа, подписки вида
+		// «AI: …» и робота БП не открываем — иначе анализ пойдёт по неполным данным
+		$settled = $this->settled;
+		if(!$settled)
+		{
+			$report['migration'] = ['ok' => false, 'message' => self::MIGRATION_PENDING];
+		}
 
-		foreach(PublicPage::installAll($documentRoot, $moduleDir) as $file => $ok)
+		$report['events'] = $settled
+			? $this->ensureEvents($moduleDir)
+			: ['ok' => true, 'warn' => true, 'message' => 'пропущено до завершения переноса'];
+
+		foreach(PublicPage::installAll($documentRoot, $moduleDir, $settled) as $file => $ok)
 		{
 			$report['file '.$file] = ['ok' => $ok, 'message' => $ok ? 'на месте' : 'не записана: нет прав или там чужой файл'];
 		}
 
-		try
+		if(!$settled)
 		{
-			$enabled = Candidates::groupByType(($this->profiles)());
-			$report['analysis agents'] = $this->ensureAnalysisAgents(array_keys($enabled));
+			$report['analysis agents'] = ['ok' => true, 'warn' => true, 'message' => 'не регистрируются до завершения переноса'];
 		}
-		catch(\Throwable $throwable)
+		else
 		{
-			// Профили не прочитались — агентов не трогаем: пустой список снял бы их все
-			$report['analysis agents'] = ['ok' => false, 'message' => 'профили не прочитаны, агенты оставлены как есть: '.$throwable->getMessage()];
+			try
+			{
+				$enabled = Candidates::groupByType(($this->profiles)());
+				$report['analysis agents'] = $this->ensureAnalysisAgents(array_keys($enabled));
+			}
+			catch(\Throwable $throwable)
+			{
+				// Профили не прочитались — агентов не трогаем: пустой список снял бы их все
+				$report['analysis agents'] = ['ok' => false, 'message' => 'профили не прочитаны, агенты оставлены как есть: '.$throwable->getMessage()];
+			}
 		}
 
 		Maintenance::installAgent();
@@ -189,14 +212,24 @@ final class Setup
 	 */
 	public function migrate(): array
 	{
+		$this->settled = false;
 		try
 		{
-			return (new Migration($this->port ?? new CoreMigrationPort()))->run()['steps'];
+			$result = (new Migration($this->port ?? new CoreMigrationPort()))->run();
+			$this->settled = $result['settled'];
+
+			return $result['steps'];
 		}
 		catch(\Throwable $throwable)
 		{
 			return ['migrate' => ['ok' => false, 'message' => 'перенос из shef.toolsai не выполнен: '.$throwable->getMessage()]];
 		}
+	}
+
+	/** Перенос улажен по последнему migrate(): отмечен либо переносить нечего. */
+	public function isMigrationSettled(): bool
+	{
+		return $this->settled;
 	}
 
 	/**

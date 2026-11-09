@@ -159,21 +159,6 @@ return [
 		'value' => [],
 		'readonly' => true,
 	],
-	// Окно выбора «Где показывать»: своя сущность ui.entity-selector.
-	'ui.entity-selector' => [
-		'value' => [
-			'entities' => [
-				[
-					'entityId' => 'shef-announce-place',
-					'provider' => [
-						'moduleId' => 'shef.toolsaicrm',
-						'className' => '\\Shef\\ToolsAiCrm\\Integration\\Ui\\EntitySelector\\PlaceProvider',
-					],
-				],
-			],
-		],
-		'readonly' => true,
-	],
 	'controllers' => [
 		'value' => [
 			'defaultNamespace' => '\\Shef\\ToolsAiCrm\\Controller',

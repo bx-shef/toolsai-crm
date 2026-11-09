@@ -32,14 +32,17 @@ interface MigrationPort
 	public function copyRange(string $source, string $target, array $columns, string $key, ?string $codePrefix, int $fromId, int $toId): int;
 
 	/**
-	 * Сверка: строки источника (с префиксом CODE, если он задан) против приёмника по ключу.
+	 * Сверка: строки источника (с префиксом CODE, если он задан) против приёмника по ключу и
+	 * по СОДЕРЖИМОМУ общих столбцов $columns.
 	 *
+	 * @param list<string> $columns общие столбцы (ключ среди них)
 	 * @return array{source: int, missing: int, sumSource: string, sumTarget: string}
 	 *         source — строк в источнике; missing — из них без пары в приёмнике;
-	 *         sumSource / sumTarget — сумма ключей (для CODE — его CRC32) по строкам источника
-	 *         и по найденным парам
+	 *         sumSource / sumTarget — сумма CRC32 строки общих столбцов (значения через «|», NULL
+	 *         отличается от пустой строки) по строкам источника и по найденным парам:
+	 *         равны, только если у каждой пары содержимое совпало
 	 */
-	public function compare(string $source, string $target, string $key, ?string $codePrefix): array;
+	public function compare(string $source, string $target, string $key, ?string $codePrefix, array $columns): array;
 
 	/**
 	 * Настройки модуля, записанные в базе (имя => значение).

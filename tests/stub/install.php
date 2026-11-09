@@ -386,30 +386,33 @@ final class MemoryPort implements MigrationPort
 		return $inserted;
 	}
 
-	public function compare(string $source, string $target, string $key, ?string $codePrefix): array
+	public function compare(string $source, string $target, string $key, ?string $codePrefix, array $columns): array
 	{
 		$this->fail('compare');
-		$sum = static fn($value): int => $key === 'CODE' ? crc32((string)$value) : (int)$value;
+		// содержимое строки — как у настоящего порта: общие столбцы через «|», NULL — отдельным знаком
+		$content = static function(array $row) use ($columns): int
+		{
+			return crc32(implode('|', array_map(static fn(string $column): string => ($row[$column] ?? null) === null ? 'N' : 'V'.$row[$column], $columns)));
+		};
 		$count = $missing = $sumSource = $sumTarget = 0;
 		foreach($this->selected($source, $codePrefix) as $row)
 		{
 			$count++;
-			$sumSource += $sum($row[$key]);
-			$found = false;
+			$sumSource += $content($row);
+			$found = null;
 			foreach($this->tables[$target]['rows'] ?? [] as $existing)
 			{
 				if($existing[$key] === $row[$key])
 				{
-					$found = true;
+					$found = $existing;
 					break;
 				}
 			}
-			$found ? $sumTarget += $sum($row[$key]) : $missing++;
+			$found === null ? $missing++ : $sumTarget += $content($found);
 		}
 
 		return ['source' => $count, 'missing' => $missing, 'sumSource' => (string)$sumSource, 'sumTarget' => (string)$sumTarget];
 	}
-
 	public function options(string $moduleId): array
 	{
 		$this->fail('options');

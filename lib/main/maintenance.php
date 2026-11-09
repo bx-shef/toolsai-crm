@@ -20,8 +20,10 @@ use Shef\ToolsAiCrm\Container;
  * столбцы), заглушки публичной страницы и робота БП, агенты анализа по включённым профилям.
  * Всё идемпотентно: registerEventHandler ядра — INSERT IGNORE по UNIQUE_ID, агенты — по имени.
  *
- * Перенос данных из shef.toolsai сюда НЕ входит: он тяжёлый и идёт при установке и по кнопке
- * «Проверить и включить» (Main\Setup).
+ * Перенос данных из shef.toolsai входит: пока нет отметки SYS_migrated_from_toolsai и в источнике
+ * есть данные, шаг migration повторяет его (Main\Setup::migrate()) — не чаще раза в RETRY секунд, как
+ * любой сбой. Агенты анализа, подписки поля «AI: …» и робот БП открываются, только когда перенос
+ * отмечен либо переносить нечего.
  *
  * До чего довели — опция SYS_eventsversion: «<версия>|<хеш .settings.php>» (stamp()). Одной версии
  * мало: запуск посреди замены файлов (новый version.php, старый .settings.php или его копия в
@@ -88,51 +90,69 @@ final class Maintenance
 		static::installAgent();
 		$setup ??= new Setup(Container::getConfig());
 		$report = [];
+		$fail = static function(array $result): void
+		{
+			if(!$result['ok'])
+			{
+				throw new \RuntimeException($result['message']);
+			}
+		};
 		$steps = [
-			'events' => static function() use ($moduleDir, $setup): void
+			'tables' => static function() use ($setup, $fail): void
 			{
-				$result = $setup->ensureEvents($moduleDir);
-				if(!$result['ok'])
-				{
-					throw new \RuntimeException($result['message']);
-				}
+				$fail($setup->ensureTables());
 			},
-			'tables' => static function() use ($setup): void
+			// Перенос — после таблиц; пока он не отмечен, шаг не успешен и повторится через RETRY
+			'migration' => static function() use ($setup): void
 			{
-				$result = $setup->ensureTables();
-				if(!$result['ok'])
+				$setup->migrate();
+				if(!$setup->isMigrationSettled())
 				{
-					throw new \RuntimeException($result['message']);
-				}
-			},
-			'agents' => static function() use ($setup): void
-			{
-				// Профили не прочитались — исключение: пустой список снял бы агентов всех типов
-				$enabled = Candidates::groupByType($setup->readProfiles());
-				$result = $setup->ensureAnalysisAgents(array_keys($enabled));
-				if(!$result['ok'])
-				{
-					throw new \RuntimeException($result['message']);
+					throw new \RuntimeException(Setup::MIGRATION_PENDING);
 				}
 			},
 		];
-		foreach($steps as $name => $step)
+		$settled = static function() use ($setup, &$report): bool
 		{
-			try
+			return ($report['migration'] ?? false) === true && $setup->isMigrationSettled();
+		};
+		$gated = [
+			'events' => static function() use ($moduleDir, $setup, $fail): void
 			{
-				$step();
-				$report[$name] = true;
-			}
-			catch(\Throwable)
+				$fail($setup->ensureEvents($moduleDir));
+			},
+			'agents' => static function() use ($setup, $fail): void
 			{
-				$report[$name] = false;
+				// Профили не прочитались — исключение: пустой список снял бы агентов всех типов
+				$enabled = Candidates::groupByType($setup->readProfiles());
+				$fail($setup->ensureAnalysisAgents(array_keys($enabled)));
+			},
+		];
+		$run = static function(array $list) use (&$report): void
+		{
+			foreach($list as $name => $step)
+			{
+				try
+				{
+					$step();
+					$report[$name] = true;
+				}
+				catch(\Throwable)
+				{
+					$report[$name] = false;
+				}
 			}
+		};
+		$run($steps);
+		$open = $settled();
+		if($open)
+		{
+			$run($gated);
 		}
-		foreach(PublicPage::installAll($documentRoot, $moduleDir) as $file => $ok)
+		foreach(PublicPage::installAll($documentRoot, $moduleDir, $open) as $file => $ok)
 		{
 			$report['file '.$file] = $ok;
 		}
-
 		return $report;
 	}
 

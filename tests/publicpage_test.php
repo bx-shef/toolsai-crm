@@ -187,6 +187,38 @@ Check::same('чужой компонент и /shef целы', [is_file($www.'/l
 Check::same('/local цел', is_file($www.'/local/php_interface.txt'), true);
 Check::same('удаление без стоящих заглушек — спокойно', array_filter(PublicPage::uninstallAll($www, $moduleDir)), PublicPage::uninstallAll($www, $moduleDir));
 
+Check::group('удаление: у shef.toolsai есть переходная заглушка робота — заглушки возвращаются на него');
+$legacyDir = $www.'/bitrix/modules/shef.toolsai';
+mkdir($legacyDir.'/activities/analyze', 0777, true);
+PublicPage::installAll($www, $moduleDir);
+Check::same('(без переходной заглушки каталога shef.toolsai нет — null)', PublicPage::legacyRobotModuleDir($www, $moduleDir), null);
+file_put_contents($legacyDir.'/activities/analyze/.description.php', '<?php // переходная заглушка');
+Check::same('одного файла мало — null', PublicPage::legacyRobotModuleDir($www, $moduleDir), null);
+$report = PublicPage::uninstallAll($www, $moduleDir);
+Check::same('описание есть, класса нет — робот удалён', [is_dir($robotDir)], [false]);
+PublicPage::installAll($www, $moduleDir);
+file_put_contents($legacyDir.'/activities/analyze/shtoolsaianalyzeactivity.php', '<?php // переходная заглушка');
+Check::same('оба файла — каталог найден', PublicPage::legacyRobotModuleDir($www, $moduleDir), str_replace('\\', '/', $www).'/bitrix/modules/shef.toolsai');
+Check::same('без каталога модуля — null', PublicPage::legacyRobotModuleDir($www, ''), null);
+$report = PublicPage::uninstallAll($www, $moduleDir);
+Check::same('отчёт: все на месте', array_filter($report), $report);
+Check::same('страница и компонент убраны', [is_dir($www.'/shef/toolsaicrm'), is_dir($www.'/local/components/shef/toolsaicrm.settings')], [false, false]);
+Check::same('описание робота ведёт в shef.toolsai', file_get_contents($robotDir.'/.description.php'), $legacy('/activities/analyze/.description.php'));
+Check::same('класс робота ведёт в shef.toolsai', file_get_contents($robotDir.'/shtoolsaianalyzeactivity.php'), $legacy('/activities/analyze/shtoolsaianalyzeactivity.php'));
+Check::same('это не «наша» заглушка, но «своя» для повторной установки: установка снова ведёт в новый модуль', [PublicPage::getList()[4]->install($www, $moduleDir), file_get_contents($robotDir.'/shtoolsaianalyzeactivity.php')], [true, $require('/bitrix/modules/shef.toolsaicrm/activities/analyze/shtoolsaianalyzeactivity.php')]);
+file_put_contents($robotDir.'/.description.php', "<?php\n// чужое описание робота\n");
+PublicPage::uninstallAll($www, $moduleDir);
+Check::same('чужой файл на месте робота не перезаписан', file_get_contents($robotDir.'/.description.php'), "<?php\n// чужое описание робота\n");
+unlink($robotDir.'/.description.php');
+unlink($robotDir.'/shtoolsaianalyzeactivity.php');
+rmdir($robotDir);
+@rmdir($www.'/bitrix/activities/custom');
+unlink($legacyDir.'/activities/analyze/.description.php');
+unlink($legacyDir.'/activities/analyze/shtoolsaianalyzeactivity.php');
+rmdir($legacyDir.'/activities/analyze');
+rmdir($legacyDir.'/activities');
+rmdir($legacyDir);
+
 Check::group('корня сайта нет — своих каталогов не создаём');
 $page = PublicPage::getList()[0];
 Check::same('установка отказывает', $page->install($portal.'/nowhere', $moduleDir), false);

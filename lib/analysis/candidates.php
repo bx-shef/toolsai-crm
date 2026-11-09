@@ -32,7 +32,7 @@ use Shef\ToolsAiCrm\Deal\ProfilePicker;
  *   - у типа с флагом CLOSED (EntityType::$closedFlag, сделка) — CLOSED = 'N';
  *   - воронка с включённым профилем (у типа без воронок — одна, 0);
  *   - не проверялась или проверялась раньше REANALYZE_DAYS (самый короткий
- *     среди профилей воронки; LEFT JOIN shef_toolsai_entity_check по типу и ID);
+ *     среди профилей воронки; LEFT JOIN shef_toolsaicrm_entity_check по типу и ID);
  *   - жива: создана позже ACTIVE_DAYS (самый мягкий срок воронки) или есть
  *     дело не от служебного пользователя позже этой границы; точная
  *     проверка по профилю — DealFacts::isAlive();

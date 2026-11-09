@@ -14,12 +14,15 @@ namespace Shef\ToolsAiCrm\Main;
  *      Если старый прогон ещё идёт (его блокировка жива), ждём до WAIT_SECONDS.
  *   2. Копия пакетами `INSERT IGNORE ... SELECT` с теми же ID (промпты — по CODE: у них свой
  *      уникальный индекс). Таблицы нет в источнике или в ней нет строк — пропуск.
- *      Повтор добирает недостающее и ничего не затирает.
+ *      Повтор добирает недостающее и ничего не затирает. Стоит отметка SYS_migrated_from_toolsai —
+ *      строки не копируются вовсе (удалённое здесь не возвращается), добираются лишь настройки.
+ *      Старое не остановилось — не копируется ничего.
  *   3. Настройки: под теми же кодами, только если у приёмника значения нет — то, что
  *      администратор поправил уже здесь, не затирается. DEAL_crmevents копируется, но
  *      в shef.toolsai остаётся: оттуда ничего не удаляется.
- *   4. Сверка по каждой таблице: строк источника без пары в приёмнике — 0, суммы ключей сошлись;
- *      у настроек — каждая на месте. Сошлась — отметки: SYS_migrated_from_toolsai в настройках
+ *   4. Сверка по каждой таблице: строк источника без пары в приёмнике — 0 и сошлось СОДЕРЖИМОЕ общих
+ *      столбцов (сумма CRC32 строки по источнику и по найденным парам; у промптов пара — по CODE).
+ *      Расхождение — конфликт: отметок нет, сообщение; у настроек — каждая на месте. Сошлась — отметки: SYS_migrated_from_toolsai в настройках
  *      этого модуля и SYS_crm_moved в настройках shef.toolsai («время|числа»). Только по этой
  *      отметке установщик shef.toolsai убирает свои старые таблицы и настройки.
  *      Не сошлась — ничего не помечается (прежние отметки снимаются: убирать старое по ним
@@ -153,8 +156,13 @@ final class Migration
 	/**
 	 * Выполнить перенос.
 	 *
-	 * @return array{ok: bool, marked: bool, steps: array<string, array{ok: bool, message: string, warn?: bool}>}
-	 *         ok — перенос завершён и сверен (или переносить было нечего); marked — отметки поставлены
+	 * Отметка уже стоит — перенос состоялся раньше: строки НЕ копируются повторно (удалённое в этом
+	 * модуле не возвращается), добавляются только недостающие настройки. Старое не остановилось —
+	 * НЕ копируем: старый агент дописал бы строки после копии.
+	 *
+	 * @return array{ok: bool, marked: bool, settled: bool, steps: array<string, array{ok: bool, message: string, warn?: bool}>}
+	 *         ok — перенос завершён и сверен (или переносить было нечего); marked — отметки стоят;
+	 *         settled — можно открывать агентов, подписки вида и робота: перенос отмечен либо переносить нечего
 	 */
 	public function run(): array
 	{
@@ -165,11 +173,39 @@ final class Migration
 		// 1. Старое — до копии
 		$stopped = $this->stopOld();
 		$steps['stop old'] = $stopped;
-		$allOk = $stopped['ok'];
 
-		// 2. Копия и сверка таблиц
+		$alreadyMarked = false;
+		try
+		{
+			$alreadyMarked = ($this->port->options(Constants::MODULE_ID)[Constants::OPTION_MIGRATED] ?? '') !== '';
+		}
+		catch(\Throwable)
+		{
+		}
+
+		if(!$alreadyMarked && !$stopped['ok'])
+		{
+			try
+			{
+				$this->unmark();
+			}
+			catch(\Throwable)
+			{
+			}
+			$steps['migrate mark'] = ['ok' => false, 'message' => 'старое не остановлено — данные не копируются, отметок нет, старые данные не тронуты; перенос повторится сам, его можно повторить кнопкой «Проверить и включить»'];
+
+			return ['ok' => false, 'marked' => false, 'settled' => false, 'steps' => $steps];
+		}
+		$allOk = $alreadyMarked || $stopped['ok'];
+
+		// 2. Копия и сверка таблиц (отметка стоит — строки не копируем)
 		foreach(self::TABLES as [$source, $target, $key, $prefix])
 		{
+			if($alreadyMarked)
+			{
+				$steps['migrate '.$source] = ['ok' => true, 'message' => 'перенос отмечен — строки не копируются повторно'];
+				continue;
+			}
 			try
 			{
 				$result = $this->copyTable($source, $target, $key, $prefix);
@@ -187,7 +223,7 @@ final class Migration
 			}
 		}
 
-		// 3. Настройки
+		// 3. Настройки (недостающие — и при отметке)
 		try
 		{
 			$options = $this->copyOptions();
@@ -208,7 +244,14 @@ final class Migration
 		$marked = false;
 		try
 		{
-			if(!$allOk)
+			if($alreadyMarked)
+			{
+				// отметка своя; в shef.toolsai восстанавливается, если её там нет
+				$this->mark($counts);
+				$marked = true;
+				$steps['migrate mark'] = ['ok' => true, 'message' => 'перенос отмечен ранее'];
+			}
+			elseif(!$allOk)
 			{
 				$this->unmark();
 				$steps['migrate mark'] = ['ok' => false, 'message' => 'сверка не сошлась или старое не остановлено: отметок нет, старые данные не тронуты — повторите «Проверить и включить»'];
@@ -228,9 +271,12 @@ final class Migration
 		{
 			$steps['migrate mark'] = ['ok' => false, 'message' => 'отметки не поставлены: '.$throwable->getMessage()];
 			$allOk = false;
+			$marked = false;
 		}
 
-		return ['ok' => $allOk, 'marked' => $marked, 'steps' => $steps];
+		$settled = $marked || ($allOk && !$hadSource);
+
+		return ['ok' => $allOk, 'marked' => $marked, 'settled' => $settled, 'steps' => $steps];
 	}
 
 	/**
@@ -273,7 +319,7 @@ final class Migration
 				return [
 					'ok' => false,
 					'warn' => true,
-					'message' => 'агентов снято: '.$agents.', подписок: '.$events.'; прогон старого агента ещё идёт — перенос завершится при следующем запуске',
+					'message' => 'агентов снято: '.$agents.', подписок: '.$events.'; прогон старого агента ещё идёт — копия не выполняется, перенос повторится сам и по «Проверить и включить»',
 				];
 			}
 		}
@@ -313,7 +359,7 @@ final class Migration
 			return ['ok' => false, 'message' => 'у таблиц нет общего ключа '.$key, 'had' => true, 'rows' => 0];
 		}
 
-		$total = $this->port->compare($source, $target, $key, $prefix);
+		$total = $this->port->compare($source, $target, $key, $prefix, $common);
 		if($total['source'] === 0)
 		{
 			// Таблица есть, строк нет: переносить нечего, но отметка нужна — по ней shef.toolsai уберёт пустую таблицу
@@ -328,12 +374,16 @@ final class Migration
 			$from = $end + 1;
 		}
 
-		$after = $this->port->compare($source, $target, $key, $prefix);
+		$after = $this->port->compare($source, $target, $key, $prefix, $common);
 		if(!self::isMatched($after))
 		{
+			$conflict = $after['missing'] === 0;
+
 			return [
 				'ok' => false,
-				'message' => 'сверка не сошлась: строк '.$after['source'].', без пары '.$after['missing'].' (суммы '.$after['sumSource'].' и '.$after['sumTarget'].')',
+				'message' => $conflict
+					? 'конфликт: в приёмнике (по ключу '.$key.') есть строки с другим содержимым, чем в источнике — отметок нет, разберите расхождение (строк '.$after['source'].', суммы '.$after['sumSource'].' и '.$after['sumTarget'].')'
+					: 'сверка не сошлась: строк '.$after['source'].', без пары '.$after['missing'].' (суммы '.$after['sumSource'].' и '.$after['sumTarget'].')',
 				'had' => true,
 				'rows' => $after['source'],
 			];

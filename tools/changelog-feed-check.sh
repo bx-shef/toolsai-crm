@@ -21,7 +21,7 @@
 
 set -u
 
-PRODUCTS='toolsai assistant mcp announce kb eval memory light embed'
+PRODUCTS='toolsai assistant mcp announce kb eval memory light embed crm'
 product="${1:-}"
 root="${2:-.}"
 bad=0

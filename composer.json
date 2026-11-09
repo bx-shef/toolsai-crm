@@ -1,0 +1,42 @@
+{
+	"name": "bxshef/toolsai-crm",
+	"description": "Битрикс24 (коробка): автооценка CRM — AI оценивает сделки, лиды и смарт-процессы: риск, вердикт, дела менеджерам и старшим, оценка работы менеджеров, статистика; модель, лицензия, квота и расход — shef.toolsai",
+	"type": "bitrix-module",
+	"license": "MIT",
+	"keywords": [
+		"bitrix",
+		"Bitrix24",
+		"local-module",
+		"ai",
+		"crm",
+		"deals"
+	],
+	"homepage": "https://github.com/bx-shef/toolsai-crm",
+	"authors": [
+		{
+			"name": "Igor Shevchik",
+			"email": "offer@bx-shef.by",
+			"homepage": "https://bx-shef.by/"
+		}
+	],
+	"support": {
+		"issues": "https://github.com/bx-shef/toolsai-crm/issues",
+		"email": "offer@bx-shef.by"
+	},
+	"minimum-stability": "stable",
+	"require": {
+		"php": ">=8.2.0",
+		"ext-json": "*",
+		"ext-mbstring": "*",
+		"composer/installers": "^1.0 || ^2.0",
+		"bxshef/options": "^3.0",
+		"bxshef/problems": "^2.0",
+		"bxshef/toolsai": "^1.96"
+	},
+	"extra": {
+		"installer-name": "shef.toolsaicrm",
+		"branch-alias": {
+			"dev-main": "1.x-dev"
+		}
+	}
+}

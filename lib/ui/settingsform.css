@@ -1,0 +1,101 @@
+/* Карточки настроек — как «Настройки BitrixGPT» CRM (crm.ai.settings-slider, 1.64.0) */
+.shef-ui-card {
+	margin-bottom: 16px;
+	padding: 18px 20px 20px;
+	border-radius: var(--ui-border-radius-2xl, 18px);
+	background: var(--ui-color-palette-white-base, #fff);
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .02), 0 5px 16px 0 rgba(0, 0, 0, .03);
+}
+.shef-ui-card__head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid var(--ui-color-base-7, #edeef0);
+}
+.shef-ui-card.--collapsed .shef-ui-card__head { padding-bottom: 0; border-bottom: 0; cursor: pointer; }
+.shef-ui-card__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--ui-color-accent-soft-blue-3, #e5f3ff);
+	--ui-icon-set__icon-size: 18px;
+	--ui-icon-set__icon-color: var(--ui-color-accent-main-primary, #0075ff);
+}
+.shef-ui-card__title {
+	margin-right: auto;
+	font-size: var(--ui-font-size-xl, 17px);
+	font-weight: var(--ui-font-weight-medium, 500);
+	line-height: 23px;
+	letter-spacing: -.1px;
+	color: var(--ui-color-palette-black-base, #151515);
+}
+.shef-ui-card__help { flex-shrink: 0; }
+.shef-ui-card__toggle {
+	flex-shrink: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	font: inherit;
+	font-size: var(--ui-font-size-sm, 13px);
+	color: var(--ui-color-accent-main-link, #2066b0);
+	cursor: pointer;
+}
+.shef-ui-card__toggle:hover { text-decoration: underline; }
+.shef-ui-card.--collapsed .shef-ui-card__body { display: none; }
+.shef-ui-card__desc {
+	padding-top: 14px;
+	font-size: var(--ui-font-size-md, 14px);
+	line-height: 19px;
+	color: var(--ui-color-palette-gray-90, #828b95);
+}
+.shef-ui-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 11px;
+	padding: 14px 0;
+	border-bottom: 1px solid var(--ui-color-palette-gray-10, #f1f2f3);
+}
+.shef-ui-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.shef-ui-row__label {
+	flex: 0 0 220px;
+	min-height: 34px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+	font-size: var(--ui-font-size-md, 14px);
+	line-height: 18px;
+	color: var(--ui-color-palette-gray-90, #525c69);
+}
+.shef-ui-row.--switch .shef-ui-row__label { color: var(--ui-color-palette-black-base, #151515); }
+.shef-ui-row__q { display: inline; }
+.shef-ui-row__body { flex: 1 1 auto; min-width: 0; max-width: 560px; }
+.shef-ui-row.--wide .shef-ui-row__body { max-width: none; }
+.shef-ui-row .ui-ctl.shef-ui-row__select { max-width: 320px; }
+.shef-ui-row__eye { width: auto; padding: 0 10px; border: 0; background: none; font: inherit; font-size: var(--ui-font-size-sm, 13px); color: var(--ui-color-accent-main-link, #2066b0); cursor: pointer; }
+.shef-ui-row__secret { margin-top: 6px; font-size: var(--ui-font-size-sm, 13px); line-height: 17px; font-weight: 600; color: var(--ui-color-palette-green-70, #589309); }
+.shef-ui-row__secret.--empty { font-weight: normal; color: var(--ui-color-palette-gray-90, #828b95); }
+.shef-ui-row__switch { display: inline-flex; align-items: center; min-height: 34px; }
+.shef-ui-row__desc {
+	margin-top: 6px;
+	font-size: var(--ui-font-size-sm, 13px);
+	line-height: 17px;
+	color: var(--ui-color-palette-gray-90, #828b95);
+}
+.shef-ui-row__info {
+	padding: 14px 0;
+	font-size: var(--ui-font-size-md, 14px);
+	line-height: 19px;
+	color: var(--ui-color-palette-black-base, #333);
+	border-bottom: 1px solid var(--ui-color-palette-gray-10, #f1f2f3);
+}
+@media (max-width: 720px) {
+	.shef-ui-row { flex-direction: column; gap: 6px; }
+	.shef-ui-row__label { flex-basis: auto; min-height: 0; }
+	.shef-ui-row .ui-ctl.shef-ui-row__select { max-width: none; }
+}

@@ -1,0 +1,23 @@
+<?php
+$MESS['SH_TOOLSAICRM_STATS_DEALS'] = 'Анализ записей: сделки, лиды, смарт-процессы';
+$MESS['SH_TOOLSAICRM_STATS_DEALS_CHECKED'] = 'Проверено';
+$MESS['SH_TOOLSAICRM_STATS_DEALS_ANALYZED'] = 'разобрано моделью';
+$MESS['SH_TOOLSAICRM_STATS_DEALS_SKIPPED'] = 'пропущено';
+$MESS['SH_TOOLSAICRM_STATS_DEALS_TODO'] = 'Дел менеджерам';
+$MESS['SH_TOOLSAICRM_STATS_DEALS_ESC'] = 'дел старшему';
+$MESS['SH_TOOLSAICRM_STATS_DEALS_OVERDUE'] = 'дел старшему о просрочке';
+$MESS['SH_TOOLSAICRM_STATS_DEALS_NOTE'] = 'У записи хранится только последняя проверка: запись, проверенная и в периоде, и после него, здесь не видна.';
+$MESS['SH_TOOLSAICRM_STATS_COL_MANAGER'] = 'Ответственный';
+$MESS['SH_TOOLSAICRM_STATS_COL_PROFILE'] = 'Профиль';
+$MESS['SH_TOOLSAICRM_STATS_NO_PROFILE'] = 'без профиля';
+$MESS['SH_TOOLSAICRM_STATS_COL_DEALS'] = 'Записей';
+$MESS['SH_TOOLSAICRM_STATS_COL_TYPE'] = 'Тип записи';
+$MESS['SH_TOOLSAICRM_STATS_COL_AVG_RISK'] = 'Средний риск';
+$MESS['SH_TOOLSAICRM_STATS_COL_TODO'] = 'Дел менеджеру';
+$MESS['SH_TOOLSAICRM_STATS_COL_ESC'] = 'К старшему';
+$MESS['SH_TOOLSAICRM_STATS_COL_AVG_SCORE'] = 'Средняя';
+$MESS['SH_TOOLSAICRM_STATS_COL_MIN_SCORE'] = 'Худшая';
+$MESS['SH_TOOLSAICRM_STATS_MANAGER_SCORES'] = 'Оценка работы менеджеров (анализ записей)';
+$MESS['SH_TOOLSAICRM_STATS_MANAGER_SCORES_EMPTY'] = 'За период оценок нет: анализ записей ставит её, когда в сводке есть звонки с содержанием, письма или чаты.';
+$MESS['SH_TOOLSAICRM_STATS_MANAGER_SCORES_NOTE'] = 'При анализе сделки, лида или элемента смарт-процесса модель оценивает и работу ответственного по звонкам, письмам и чатам (0–100). Здесь — по ответственному записи сейчас: средняя и худшая оценка за период, худшие первыми.';
+$MESS['SH_TOOLSAICRM_STATS_COL_ANALYSES'] = 'Анализов';

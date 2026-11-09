@@ -1,6 +1,6 @@
 # Правила работы агента
 
-> Последняя сверка: 2026-11-08
+> Последняя сверка: 2026-11-09
 
 Правила — общие для линейки и живут в
 [shef.toolsai: docs/private/agent-rules.md](https://github.com/bx-shef/toolsai/blob/main/docs/private/agent-rules.md).
@@ -19,9 +19,13 @@
 
 Отличия этого репозитория:
 
-* модуль не зависит от `shef.toolsai` — держит `tests/settings_test.php`;
-* коды настроек и отметок не меняются: на них лежат данные порталов
-  (перенос из `shef.toolsai` выполнен и убран в 1.2.0).
+* модуль зависит от `shef.toolsai` 1.96.0+, но ходит в него только через публичный API
+  (`LlmService`, `AccessService`): классов shef.toolsai в `lib/` нет — держит `tests/seam_test.php`;
+* коды настроек (`DEAL_*`, `ANALYSIS_*`, `CALLSCRIPT_*`), поля `UF_SHEF_AI_*`, тип поля и робот БП
+  не меняются: на них лежат данные порталов и схемы БП;
+* перенос данных из `shef.toolsai` — сверка перед отметкой (`SYS_migrated_from_toolsai`,
+  `SYS_crm_moved`); правка переноса — уровень 2;
+* справка: `docs/guide` → `kb/guide` (`php tools/kb-build.php`), якоря `settings/faqdata.php` сверяет `tests/kb_test.php`.
 7. **Выпуск — агент выпуска, одинаково во всех модулях toolsai** (`plan/version-rule.md`, с 02.11). В PR версия модуля не поднимается: запись — в CHANGELOG под «## Не выпущено». Выпуск делает один агент выпуска по команде ведущего: берёт main, переносит «Не выпущено» в «## X.Y.Z — дата», поднимает `VERSION` в `install/version.php` (и `package.json`, где есть), собирает архив (`plan/build-zip.sh`), ставит тег `v<версия>` после проверки на стенде и выкладывает `gh release create` с разделом CHANGELOG. На стенд ставится только архив выпуска из main. Номер — по semver: новые функции — минор, исправления — патч. Тег с такой версией уже есть — не перезаписываем.
 
 ## Ревью PR

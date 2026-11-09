@@ -4,7 +4,7 @@
 
 ```markdown
 ---
-product: announce          # toolsai | assistant | mcp | announce | kb | eval
+product: crm               # toolsai | assistant | mcp | announce | kb | eval | crm
 date: 2026-10-22
 pr: 313
 version: 1.63.7           # если известна; иначе пусто

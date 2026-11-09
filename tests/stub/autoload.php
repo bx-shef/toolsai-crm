@@ -4,11 +4,15 @@
  * Автозагрузка для тестов без портала.
  *
  * Правило то же, по которому классы ищет портал: Shef\ToolsAiCrm\Foo\Bar
- * -> lib/foo/bar.php, путь СТРОЧНЫМИ. Держит это соглашение
- * tests/autoload_test.php. Классы модуля подключаются настоящие.
+ * -> lib/foo/bar.php, путь СТРОЧНЫМИ. Классы модуля подключаются настоящие.
+ *
+ * Движок shef.toolsai в тестах — заглушки tests/stub/engine.php (публичный
+ * API LlmService/LlmResponse) и модель-заглушка tests/stub/model.php.
  */
 
 require_once __DIR__.'/bitrix.php';
+require_once __DIR__.'/psr.php';
+require_once __DIR__.'/engine.php';
 
 spl_autoload_register(static function(string $class): void
 {
@@ -24,3 +28,5 @@ spl_autoload_register(static function(string $class): void
 		require_once $path;
 	}
 });
+
+require_once __DIR__.'/model.php';

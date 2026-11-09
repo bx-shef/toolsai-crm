@@ -64,7 +64,7 @@ final class AnalysisAgent
 		// До лимита запросов к модели по 2-4 с, а при сбоях — до таймаута
 		// провайдера: прогон идёт минуты. Агент на хитах (не на cron) иначе
 		// упёрся бы в max_execution_time посреди записи — оплаченный ответ без
-		// записи о проверке. Рекомендация — агенты на cron (docs/private/02-deal-health.md).
+		// записи о проверке. Рекомендация — агенты на cron (docs/guide/12-install-ops.md).
 		if(function_exists('set_time_limit'))
 		{
 			@set_time_limit(0);

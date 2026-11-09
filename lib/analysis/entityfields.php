@@ -40,7 +40,7 @@ use Shef\ToolsAiCrm\Deal\Verdict;
  *     сделка — crm:OnBeforeCrmDealUpdate, лид — crm:OnBeforeCrmLeadUpdate
  *     (crm/lib/Service/Factory/Lead.php:542). У смарт-процессов
  *     совместимого «до изменения» нет — их поля держат только
- *     EDIT_IN_LIST = N и onGetPublicEdit (docs/private/02-deal-health.md).
+ *     EDIT_IN_LIST = N и onGetPublicEdit.
  *
  * ЗАПИСЬ — только через CrmWrite::update() (#497): фабрика CRM, роботы,
  * БП и история — по настройке DEAL_crmevents (по умолчанию выключены:

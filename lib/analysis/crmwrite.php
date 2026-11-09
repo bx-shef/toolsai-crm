@@ -22,7 +22,7 @@ use Bitrix\Main\Loader;
  * обязательных полей и запущенных БП: иначе итог агента может не лечь.
  *
  * После успешной записи — своё событие shef.toolsaicrm:OnAfterCrmWrite
- * (docs/guide/32-public-api.md), в обоих режимах.
+ * (docs/dev/events.md), в обоих режимах.
  */
 final class CrmWrite
 {

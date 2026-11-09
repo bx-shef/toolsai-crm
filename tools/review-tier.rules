@@ -24,13 +24,15 @@ hold LICENSE                        # лицензия репозитория �
 2 tools/review-tier.*                 # правила уровней: ошибка в них тихо снижает ревью
 2 build.sh|composer.json              # сборка, пакет
 2 .settings.php|default_option.php    # подписки, контроллеры, умолчания и коды настроек: смена — решение владельца
-# установщик и доведение после обновления копированием
-2 install/index.php|install/layout.php
-2 lib/main/maintenance.php|lib/main/adminpage.php|lib/main/publicpage.php|lib/main/tableinstaller.php
-# публичный API: события для модулей, REST и инструменты MCP
-2 lib/public/*|lib/integration/rest/service.php|lib/announce/mcptools.php
-# безопасность: права ролей, контроллеры, видео и картинки окна, публичные страницы и админка
-2 lib/access/*|lib/controller/*|lib/announce/media.php|lib/announce/art.php|public/*|admin/*
+# установщик, перенос данных, доведение после обновления копированием
+2 install/*
+2 lib/main/migration*.php|lib/main/setup.php|lib/main/maintenance.php|lib/main/publicpage.php|lib/main/coremigrationport.php
+# ядро анализа: шов к shef.toolsai, прогон, агенты, поля «AI: …» и защита, запись в CRM
+2 lib/core/*|lib/container.php|lib/analysis/runner.php|lib/analysis/crmwrite.php|lib/agent/*
+2 lib/deal/field/*
+# публичный API и безопасность: контроллеры, REST, MCP, ajax и компонент страницы
+2 lib/controller/*|lib/integration/rest/*|lib/rest/*
+2 settings/ajax.php|settings/component.php
 # схема таблиц
 2 lib/*/model/*table.php
 
@@ -40,15 +42,14 @@ case 0 CHANGELOG.md
 case 0 CLAUDE.md
 case 0 AGENTS.md
 case 0 CONTRIBUTING.md
+case 0 docs/README.md
 case 0 docs/private/project-map.md
 case 0 docs/private/agent-rules.md
-case 0 docs/guide/01-announcements.md
+case 0 docs/guide/01-deal-analysis.md
 case 0 docs/dev/rest.md
-case 0 changelog/2026-10-30-44.md
-case 0 changelog/2026-10-30-44/window.webp
-case 0 docs/guide/img/window.png
+case 0 changelog/2026-11-09-639.md
 case 0 install/version.php
-case 0 tests/access_test.php
+case 0 tests/seam_test.php
 case 0 tests/stub/bitrix.php
 case 0 tests/changelog_feed.sh
 case 0 .gitattributes
@@ -59,47 +60,57 @@ case 0 .claude/skills/review-panel/evals/selection.json
 case 0 .claude/skills/MANIFEST
 case 0 .claude/skills/LOCAL.MANIFEST
 case 0 .claude/skills/SOURCE
-case 1 lib/announce/announcements.php
-case 1 lib/announce/places.php
-case 1 lib/announce/gridview.php
-case 1 lib/announce/listview.php
+case 1 lib/deal/healthanalyzer.php
+case 1 lib/analysis/candidates.php
+case 1 lib/stats/managerscores.php
+case 1 lib/settings/faq.php
+case 1 settings/profiles.php
+case 1 settings/prompts.php
+case 1 settings/stats.php
+case 1 settings/faqdata.php
 case 1 lang/ru/options.php
 case 1 lang/ru/install/index.php
 case 1 options.php
 case 1 options_conf.php
 case 1 include.php
 case 1 autoload.php
+case 1 activities/analyze/shtoolsaianalyzeactivity.php
+case 1 lib/robot/analyzenow.php
 case 1 tools/changelog-feed-check.sh
+case 1 tools/kb-build.php
 case 2 tools/review-tier.sh
 case 2 tools/review-tier.rules
 case 2 build.sh
 case 2 composer.json
 case 2 .github/workflows/ci.yml
 case 2 .github/workflows/release.yml
-case 2 .github/ISSUE_TEMPLATE/bug.md
 case 2 .claude/skills/sync.sh
 case 2 .claude/skills/update.sh
 case 2 .settings.php
 case 2 default_option.php
 case 2 install/index.php
 case 2 install/layout.php
+case 2 lib/main/migration.php
+case 2 lib/main/migrationport.php
+case 2 lib/main/coremigrationport.php
+case 2 lib/main/setup.php
 case 2 lib/main/maintenance.php
-case 2 lib/main/adminpage.php
 case 2 lib/main/publicpage.php
-case 2 lib/main/tableinstaller.php
-case 2 lib/public/event/onannouncementscollectevent.php
-case 2 lib/public/event/onannouncementplacescollectevent.php
+case 2 lib/core/model.php
+case 2 lib/container.php
+case 2 lib/analysis/runner.php
+case 2 lib/analysis/crmwrite.php
+case 2 lib/agent/analysisagent.php
+case 2 lib/agent/maintenance.php
+case 2 lib/deal/field/handlers.php
+case 2 lib/deal/field/acktype.php
+case 2 lib/controller/dealflag.php
 case 2 lib/integration/rest/service.php
-case 2 lib/announce/mcptools.php
-case 2 lib/access/rights.php
-case 2 lib/access/useraccess.php
-case 2 lib/controller/banner.php
-case 2 lib/controller/access.php
-case 2 lib/announce/media.php
-case 2 lib/announce/art.php
-case 2 public/ajax.php
-case 2 public/component.php
-case 2 admin/list.php
-case 2 lib/access/model/roletable.php
-case 2 lib/announce/model/seentable.php
+case 2 lib/rest/mcptools.php
+case 2 settings/ajax.php
+case 2 settings/component.php
+case 2 lib/analysis/model/historytable.php
+case 2 lib/deal/model/dealprofiletable.php
+case 2 lib/callscript/model/callscriptruletable.php
+case 2 lib/analysis/model/prompttable.php
 case 2 LICENSE

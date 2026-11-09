@@ -25,8 +25,9 @@ MODULE_ID='shef.toolsaicrm'
 
 # Уезжает на портал и в Composer-пакет.
 #
-# admin/ — страница списка (через заглушку в /bitrix/admin, её пишет
-# Main\AdminPage) и menu.php — пункт меню «Настройки».
+# activities/ — робот БП «AI: оценить сейчас» (заглушку в /bitrix/activities/custom пишет
+# Main\PublicPage); settings/ — страницы настроек публичной части (заглушки пишет он же);
+# kb/ — пакет справки для «Базы знаний».
 SHIP=(
 	'.settings.php'
 	'CHANGELOG.md'
@@ -38,11 +39,12 @@ SHIP=(
 	'include.php'
 	'options.php'
 	'options_conf.php'
-	'public/'
-	'admin/'
+	'activities/'
 	'install/'
+	'kb/'
 	'lang/'
 	'lib/'
+	'settings/'
 )
 
 # Остаётся в репозитории.
@@ -582,7 +584,7 @@ run_tests()
 # «Не выпущено» без записи; тест проверки — на мутациях.
 check_changelog_feed()
 {
-	if bash tools/changelog-feed-check.sh announce . && bash tests/changelog_feed.sh announce
+	if bash tools/changelog-feed-check.sh crm . && bash tests/changelog_feed.sh crm
 	then
 		ok 'лента «Что нового» в порядке'
 	else

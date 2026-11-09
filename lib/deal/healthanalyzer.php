@@ -17,7 +17,7 @@ use Shef\ToolsAiCrm\Core\ModelInterface;
  *    модуль aiassistant (bizproc/lib/Public/Service/AiAgent/NodeAvailabilityService.php:13,36),
  *    которого на коробке нет.
  *
- * Подробности — docs/private/02-deal-health.md.
+ *
  */
 final class HealthAnalyzer
 {

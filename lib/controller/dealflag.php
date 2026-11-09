@@ -14,7 +14,7 @@ use Shef\ToolsAiCrm\Analysis\EntityTypes;
 /**
  * Кнопки «Риск под контролем» / «Отработано» в карточке сделки (AckType).
  *
- *   BX.ajax.runAction('shef:toolsai.dealflag.mark', {data: {dealId, role}})
+ *   BX.ajax.runAction('shef:toolsaicrm.dealflag.mark', {data: {dealId, role}})
  *
  * Только POST, авторизованный пользователь, sessid (ActionFilter\Csrf).
  * Права проверяются заново по базе: адресат — ответственный (manager) или

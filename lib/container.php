@@ -9,6 +9,7 @@ use Shef\ToolsAiCrm\Core\Model;
 use Shef\ToolsAiCrm\Core\ModelInterface;
 use Shef\ToolsAiCrm\Deal\ContextBuilder;
 use Shef\ToolsAiCrm\Deal\Escalation;
+use Shef\ToolsAiCrm\Deal\FactsSourceInterface;
 use Shef\ToolsAiCrm\Deal\HealthAnalyzer;
 use Shef\ToolsAiCrm\Main\Constants;
 
@@ -21,6 +22,7 @@ final class Container
 	private static ?Config $config = null;
 	private static ?LlmService $llmService = null;
 	private static ?ModelInterface $model = null;
+	private static ?FactsSourceInterface $facts = null;
 
 	public static function getConfig(): Config
 	{
@@ -28,11 +30,12 @@ final class Container
 	}
 
 	/** Подмена для тестов (@internal); без аргументов — вернуть настоящие. */
-	public static function override(?Config $config = null, ?LlmService $llmService = null, ?ModelInterface $model = null): void
+	public static function override(?Config $config = null, ?LlmService $llmService = null, ?ModelInterface $model = null, ?FactsSourceInterface $facts = null): void
 	{
 		self::$config = $config;
 		self::$llmService = $llmService;
 		self::$model = $model;
+		self::$facts = $facts;
 	}
 
 	public static function getLlmService(): LlmService
@@ -69,7 +72,7 @@ final class Container
 	/** Анализатор блока анализа; без типа — сделка. */
 	public static function getHealthAnalyzer(?Analysis\EntityType $type = null): HealthAnalyzer
 	{
-		return new HealthAnalyzer(new ContextBuilder(self::getAgentUserId(), $type), self::getModel());
+		return new HealthAnalyzer(self::$facts ?? new ContextBuilder(self::getAgentUserId(), $type), self::getModel());
 	}
 
 	/** Служебный пользователь агента (shef.options); нет модуля — 0. */

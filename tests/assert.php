@@ -17,6 +17,8 @@ final class Check
 	/** @var string[] */
 	private static array $errors = [];
 	private static int $count = 0;
+	/** @var string[] пропущено вслух (как Check::skip() shef.options): не засчитывается за пройденное */
+	private static array $skipped = [];
 
 	public static function boot(): void
 	{
@@ -107,6 +109,13 @@ final class Check
 		return var_export($value, true);
 	}
 
+	/** Проверка бессмысленна в этом окружении (права под root): печатается и считается отдельно. */
+	public static function skip(string $what, string $why): void
+	{
+		static::$skipped[] = $what;
+		printf("  SKIP %s — %s%s", $what, $why, PHP_EOL);
+	}
+
 	public static function finish(): never
 	{
 		echo PHP_EOL;
@@ -123,6 +132,10 @@ final class Check
 		}
 
 		printf('Проверок пройдено: %d%s', static::$count, PHP_EOL);
+		if(static::$skipped !== [])
+		{
+			printf('Пропущено: %d (%s)%s', count(static::$skipped), implode('; ', static::$skipped), PHP_EOL);
+		}
 		exit(0);
 	}
 }

@@ -2,11 +2,14 @@
 
 namespace Shef\ToolsAiCrm\Main;
 
+// Адреса и каталоги — из Constants; layout.php читает класс без ядра и автозагрузки
+require_once __DIR__.'/constants.php';
+
 /**
- * Заглушки публичной страницы модуля (1.8.0): /shef/toolsaicrm/ и
- * компонент shef:toolsaicrm.settings в /local/components (ajax.php
- * рядом — сохранение прав ui.accessrights.v2). Канон — Main\PublicPage
- * shef.toolsai и Main\AdminPage этого модуля.
+ * Заглушки публичных страниц модуля: страница /shef/toolsaicrm/, компонент
+ * shef:toolsaicrm.settings в /local/components (ajax.php рядом — права и
+ * действия разделов) и робот БП «AI: оценить сейчас» в
+ * /bitrix/activities/custom. Канон — Main\PublicPage shef.toolsai.
  *
  * Каталог модуля браузеру недоступен, поэтому снаружи лежит файл в одну
  * строку:
@@ -23,6 +26,9 @@ namespace Shef\ToolsAiCrm\Main;
  */
 class PublicPage
 {
+	/** Модуль, из которого вынесен анализ: его заглушка робота заменяется (legacyModules). */
+	public const LEGACY_MODULE_ID = 'shef.toolsai';
+
 	public function __construct(
 		/** От корня сайта: /shef/toolsaicrm/index.php */
 		public readonly string $file,
@@ -33,24 +39,43 @@ class PublicPage
 		 * убирает, если они опустели: /shef/toolsaicrm — 2, компонент — 4 (до /local).
 		 */
 		public readonly int $ownDirs = 0,
+		/**
+		 * Модули, чья заглушка на этом месте тоже считается «своей» и подлежит замене.
+		 * Робот БП до выноса анализа писал shef.toolsai: путь .../shef.toolsai/activities/analyze/...
+		 * Без этого прежнюю заглушку заменить нельзя (чужой файл не трогаем), и робот
+		 * вёл бы в каталог, которого в shef.toolsai больше нет.
+		 *
+		 * @var string[]
+		 */
+		public readonly array $legacyModules = [],
 	)
 	{
 	}
 
 	/**
-	 * Порядок важен для удаления: с конца — ajax.php раньше компонента,
-	 * каталог компонента остаётся пустым и уходит.
+	 * Порядок важен для удаления: с конца — класс робота раньше описания,
+	 * ajax.php раньше компонента; пустые каталоги уходят.
 	 *
 	 * @return static[]
 	 */
 	public static function getList(): array
 	{
 		return [
-			new static('/shef/toolsaicrm/index.php', '/public/page.php', 2),
-			// 1.9.0: картинка объявления для виджета чата AI-помощника
-			new static('/shef/toolsaicrm/art.php', '/public/art.php'),
-			new static('/local/components/shef/toolsaicrm.settings/component.php', '/public/component.php', 4),
-			new static('/local/components/shef/toolsaicrm.settings/ajax.php', '/public/ajax.php'),
+			new static(Constants::SETTINGS_FILE, Constants::SETTINGS_MODULE_PAGE, 2),
+			// /local/components/shef/toolsaicrm.settings: на портале без /local модуль создаёт
+			// и /local/components, и /local — и убирает их, если опустели (с php_interface
+			// или чужими компонентами каталог не пустой и остаётся)
+			new static(Constants::COMPONENT_FILE, Constants::COMPONENT_MODULE_PAGE, 4),
+			// ajax.php компонента. Каталог создаёт заглушка компонента выше; удаляется
+			// раньше неё, и каталог остаётся пустым
+			new static(Constants::COMPONENT_AJAX_FILE, Constants::COMPONENT_AJAX_MODULE_PAGE),
+			// Робот «AI: оценить сейчас»: ядро ищет действия в /bitrix/activities/custom.
+			// Каталог и класс прежние (shtoolsaianalyzeactivity): на них ссылаются схемы
+			// бизнес-процессов. До выноса анализа заглушку писал shef.toolsai — она «своя»
+			// и заменяется (LEGACY_MODULE_ID). Каталог робота модуль создаёт сам; custom — тоже,
+			// если его нет (2 уровня). Класс удаляется раньше описания: каталог остаётся пустым и уходит
+			new static(Constants::ROBOT_ANALYZE_DIR.'/.description.php', Constants::ROBOT_ANALYZE_MODULE_DIR.'/.description.php', 2, [self::LEGACY_MODULE_ID]),
+			new static(Constants::ROBOT_ANALYZE_DIR.'/shtoolsaianalyzeactivity.php', Constants::ROBOT_ANALYZE_MODULE_DIR.'/shtoolsaianalyzeactivity.php', 1, [self::LEGACY_MODULE_ID]),
 		];
 	}
 
@@ -115,6 +140,8 @@ class PublicPage
 	 * Своя заглушка: та, что модуль написал бы сейчас из $moduleDir (каталог
 	 * может называться иначе — клон репозитория), либо require на
 	 * .../shef.toolsaicrm<страница модуля> от корня сайта или абсолютным путём.
+	 * У робота БП — ещё и на .../shef.toolsai<страница> (заглушка до выноса анализа).
+	 * У робота БП — ещё и на .../shef.toolsai<страница> (заглушка до выноса анализа).
 	 */
 	public function isOwn(string $content, string $documentRoot = '', string $moduleDir = ''): bool
 	{
@@ -123,8 +150,13 @@ class PublicPage
 			return true;
 		}
 
+		$modules = implode('|', array_map(
+			static fn(string $module): string => preg_quote($module, '#'),
+			[Constants::MODULE_ID, ...$this->legacyModules]
+		));
 		$pattern = sprintf(
-			'#^<\?php require\((?:\$_SERVER\[\'DOCUMENT_ROOT\'\]\.)?\'[^\']*/shef\.toolsaicrm%s\'\);\s*$#',
+			'#^<\?php require\((?:\$_SERVER\[\'DOCUMENT_ROOT\'\]\.)?\'[^\']*/(?:%s)%s\'\);\s*$#',
+			$modules,
 			preg_quote($this->modulePage, '#')
 		);
 

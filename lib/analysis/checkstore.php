@@ -6,8 +6,7 @@ use Shef\ToolsAiCrm\Analysis\Model\EntityCheckTable;
 
 /**
  * «Последняя проверка» записи любого типа — одна таблица
- * shef_toolsai_entity_check с типом сущности в ключе (с 1.9.1: проверки
- * сделок перенесены туда же, EntityCheckTable::migrateDealChecks()).
+ * shef_toolsaicrm_entity_check с типом сущности в ключе.
  */
 final class CheckStore
 {

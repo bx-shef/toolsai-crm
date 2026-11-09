@@ -1,5 +1,5 @@
 [
- {"input": "проверь PR про письма в CRM перед мержем, собери панель", "expected": "review-panel"},
+ {"input": "проверь PR про профили анализа перед мержем, собери панель", "expected": "review-panel"},
  {"input": "PR доработан по замечаниям — прогони ревью ещё раз", "expected": "review-panel"},
  {"input": "запусти пять проверяющих на этот PR с квотой", "expected": "review-panel"},
  {"input": "какой уровень ревью у моего PR, нужна ли панель из пяти", "expected": "review-panel"},

@@ -2,7 +2,7 @@
 	"name": "bxshef/toolsai-crm",
 	"description": "Битрикс24 (коробка): автооценка CRM — AI оценивает сделки, лиды и смарт-процессы: риск, вердикт, дела менеджерам и старшим, оценка работы менеджеров, статистика; модель, лицензия, квота и расход — shef.toolsai",
 	"type": "bitrix-module",
-	"license": "MIT",
+	"license": "proprietary",
 	"keywords": [
 		"bitrix",
 		"Bitrix24",
@@ -14,7 +14,7 @@
 	"homepage": "https://github.com/bx-shef/toolsai-crm",
 	"authors": [
 		{
-			"name": "Igor Shevchik",
+			"name": "ООО «БэИксШефБай»",
 			"email": "offer@bx-shef.by",
 			"homepage": "https://bx-shef.by/"
 		}

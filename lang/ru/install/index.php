@@ -1,7 +1,7 @@
 <?php
 $MESS['shef.toolsaicrm_MODULE_NAME'] = '[SH] Tools AI: автооценка CRM';
 $MESS['shef.toolsaicrm_MODULE_DESC'] = 'Автоматическая оценка сделок, лидов и смарт-процессов, звонков, писем и чатов: риск потерять запись, что сделать дальше, отчёты по менеджерам. Работает на движке shef.toolsai.';
-$MESS['shef.toolsaicrm_PARTNER_NAME'] = 'ИП Шевчик И.С.';
+$MESS['shef.toolsaicrm_PARTNER_NAME'] = 'ООО «БэИксШефБай»';
 $MESS['shef.toolsaicrm_PARTNER_URI'] = 'https://bx-shef.by';
 
 $MESS['SH_MOD_BACK'] = 'К списку модулей';

@@ -524,6 +524,7 @@ class shef_toolsaicrm
 	 * сообщение, эпилог — в одном методе. Файлы ядра берут $USER, $APPLICATION, $adminPage… из
 	 * области, куда их подключили (epilog_admin_before.php: `$USER->IsAuthorized()`), — так же
 	 * делает CMain::IncludeAdminFile(). Заканчивается die(): прервать установку можно только так.
+	 * $message — доверенный HTML (тексты установщика; данные в нём — через htmlspecialcharsbx).
 	 */
 	private function ShowForm(string $type, string $message, string $buttonName = ''): void
 	{
@@ -531,8 +532,13 @@ class shef_toolsaicrm
 		$keys = array_keys($GLOBALS);
 		for($i = 0; $i < count($keys); $i++)
 		{
+			// свои параметры и счётчики глобальной с тем же именем не перекрываем
 			if(
 				$keys[$i] != 'i'
+				&& $keys[$i] != 'keys'
+				&& $keys[$i] != 'type'
+				&& $keys[$i] != 'message'
+				&& $keys[$i] != 'buttonName'
 				&& $keys[$i] != 'GLOBALS'
 				&& $keys[$i] != 'strTitle'
 				&& $keys[$i] != 'filepath'
@@ -556,7 +562,7 @@ class shef_toolsaicrm
 		<form action="<?=$this->application->GetCurPage()?>" method="get">
 			<p>
 				<input type="hidden" name="lang" value="<?=LANG?>">
-				<input type="submit" value="<?=($buttonName <> '' ? $buttonName : Loc::getMessage('SH_MOD_BACK'))?>">
+				<input type="submit" value="<?=htmlspecialcharsbx($buttonName <> '' ? $buttonName : (string)Loc::getMessage('SH_MOD_BACK'))?>">
 			</p>
 		</form>
 		<?php

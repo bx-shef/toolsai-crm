@@ -15,8 +15,8 @@
  * * удаление: с savedata таблицы и настройки остаются, без него — уходят; поля «AI: …» и их тип
  *   не удаляются; предупреждение про роботов БП в тексте формы;
  * * все коды языковых сообщений установщика есть в lang/ru/install/index.php.
- * * страницы установщика — как в линейке: ShowForm — глобальные, пролог, сообщение, эпилог в одном
- *   методе (эпилогу ядра нужен $USER); форма удаления — шаг unstep1.php через IncludeAdminFile ядра (#9).
+ * * страницы установщика — как в линейке: пролог и эпилог ядра — только в ShowForm; форма удаления —
+ *   шаг unstep1.php через IncludeAdminFile ядра (#9); поведение — tests/installpage_test.php.
  *
  * Ядро подменяется заглушками, установщик подключается настоящий.
  */
@@ -122,8 +122,8 @@ preg_match('/private function ShowForm\(string \$type, string \$message, string 
 $form = $m[1] ?? '';
 $unstep = (string)file_get_contents($root.'/install/unstep1.php');
 Check::same('ShowForm есть', $form !== '', true);
-Check::same('пролог и эпилог ядра — по одному подключению, оба в ShowForm', [substr_count($source, "/bitrix/modules/main/include/prolog_admin_after.php'"), substr_count($source, "/bitrix/modules/main/include/epilog_admin.php'"), substr_count($form, 'prolog_admin_after.php'), substr_count($form, 'epilog_admin.php')], [1, 1, 1, 1]);
-Check::same('порядок: глобальные, пролог, сообщение, эпилог, die()', preg_match('/global \$\{\$keys\[\$i\]\};.*global \$APPLICATION, \$adminPage, \$adminMenu, \$adminChain, \$USER;.*prolog_admin_after\.php.*CAdminMessage::ShowMessage.*epilog_admin\.php.*die\(\);/s', $form), 1);
+Check::same('пролог и эпилог ядра — по одному подключению, оба в ShowForm (поведение — tests/installpage_test.php)', [preg_match_all('/prolog_admin_after\.php[\'"]/', $source), preg_match_all('/epilog_admin\.php[\'"]/', $source), preg_match_all('/prolog_admin_after\.php[\'"]/', $form), preg_match_all('/epilog_admin\.php[\'"]/', $form)], [1, 1, 1, 1]);
+Check::same('подпись кнопки экранирована', str_contains($form, 'value="<?=htmlspecialcharsbx($buttonName'), true);
 Check::same('форма удаления — шаг unstep1.php через IncludeAdminFile ядра', preg_match('/public function DoUninstall\(\): void\s*\{.*?IncludeAdminFile\(.*?__DIR__\.\'\/unstep1\.php\'/s', $source), 1);
 Check::same('в шаге удаления своих пролога и эпилога нет — их выводит ядро', [str_contains($unstep, 'prolog_admin'), str_contains($unstep, 'epilog_admin')], [false, false]);
 Check::same('шаг удаления: сессия, step=2, модуль', [str_contains($unstep, 'bitrix_sessid_post()'), str_contains($unstep, 'name="step" value="2"'), str_contains($unstep, 'name="id" value="shef.toolsaicrm"')], [true, true, true]);

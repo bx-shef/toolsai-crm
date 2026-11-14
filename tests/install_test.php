@@ -15,6 +15,8 @@
  * * удаление: с savedata таблицы и настройки остаются, без него — уходят; поля «AI: …» и их тип
  *   не удаляются; предупреждение про роботов БП в тексте формы;
  * * все коды языковых сообщений установщика есть в lang/ru/install/index.php.
+ * * страницы установщика — как в линейке: пролог и эпилог ядра — только в ShowForm; форма удаления —
+ *   шаг unstep1.php через IncludeAdminFile ядра (#9); поведение — tests/installpage_test.php.
  *
  * Ядро подменяется заглушками, установщик подключается настоящий.
  */
@@ -114,6 +116,17 @@ $body = $m[1] ?? '';
 Check::same('requirementError раньше InstallDB', strpos($body, 'requirementError()') < strpos($body, '$this->InstallDB()'), true);
 Check::same('после отказа — return, дальше не идём', preg_match('/ShowForm\(\'ERROR\', \$error\);\s*return;/', $body), 1);
 Check::same('порядок: таблицы, подписки, файлы, перенос', [strpos($body, 'InstallDB()') < strpos($body, 'InstallEvents()'), strpos($body, 'InstallEvents()') < strpos($body, 'InstallFiles()'), strpos($body, 'InstallFiles()') < strpos($body, 'InstallEngine()')], [true, true, true]);
+
+Check::group('Страницы установщика — как в линейке (#9)');
+preg_match('/private function ShowForm\(string \$type, string \$message, string \$buttonName = \'\'\): void\s*\{(.*?)\n\t\}\n/s', $source, $m);
+$form = $m[1] ?? '';
+$unstep = (string)file_get_contents($root.'/install/unstep1.php');
+Check::same('ShowForm есть', $form !== '', true);
+Check::same('пролог и эпилог ядра — по одному подключению, оба в ShowForm (поведение — tests/installpage_test.php)', [preg_match_all('/prolog_admin_after\.php[\'"]/', $source), preg_match_all('/epilog_admin\.php[\'"]/', $source), preg_match_all('/prolog_admin_after\.php[\'"]/', $form), preg_match_all('/epilog_admin\.php[\'"]/', $form)], [1, 1, 1, 1]);
+Check::same('подпись кнопки экранирована', str_contains($form, 'value="<?=htmlspecialcharsbx($buttonName'), true);
+Check::same('форма удаления — шаг unstep1.php через IncludeAdminFile ядра', preg_match('/public function DoUninstall\(\): void\s*\{.*?IncludeAdminFile\(.*?__DIR__\.\'\/unstep1\.php\'/s', $source), 1);
+Check::same('в шаге удаления своих пролога и эпилога нет — их выводит ядро', [str_contains($unstep, 'prolog_admin'), str_contains($unstep, 'epilog_admin')], [false, false]);
+Check::same('шаг удаления: сессия, step=2, модуль', [str_contains($unstep, 'bitrix_sessid_post()'), str_contains($unstep, 'name="step" value="2"'), str_contains($unstep, 'name="id" value="shef.toolsaicrm"')], [true, true, true]);
 
 Check::group('requireModules');
 Check::same('shef.options, shef.problems, shef.toolsai', $settings['requireModules']['value'], ['shef.options', 'shef.problems', 'shef.toolsai']);
@@ -228,7 +241,7 @@ Check::same('интервал агента доведения', (new ReflectionC
 Check::same('группа блокировок анализа', (new ReflectionClassConstant($module, 'LOCK_GROUP_ANALYSIS'))->getValue(), Constants::LOCK_GROUP_ANALYSIS_PREFIX);
 Check::same('удаление снимает агенты модуля одним вызовом', str_contains($source, 'CAgent::RemoveModuleAgents($this->MODULE_ID)'), true);
 Check::same('удаление ставит регистрацию последней', strpos($source, '$this->UnInstallDB([') > strpos($source, '$this->UnInstallEvents();'), true);
-Check::same('форма удаления: savedata отмечен по умолчанию', preg_match('/name="savedata" value="Y" checked/', $source), 1);
+Check::same('форма удаления: savedata отмечен по умолчанию', preg_match('/name="savedata" value="Y" checked/', $unstep), 1);
 
 Check::group('удаление: предупреждение про роботов БП');
 Check::same('в тексте формы', str_contains((string)Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'), 'роботы бизнес-процессов'), true);
@@ -239,7 +252,7 @@ Check::same('про тип поля без зарегистрированног�
 
 // region Язык ////
 Check::group('языковой файл: каждый код из установщика есть');
-preg_match_all('/Loc::getMessage\(\s*\'([^\']+)\'/', $source, $matches);
+preg_match_all('/Loc::getMessage\(\s*\'([^\']+)\'/', $source.$unstep, $matches);
 $used = array_unique($matches[1]);
 foreach($used as $code)
 {

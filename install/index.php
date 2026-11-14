@@ -450,7 +450,12 @@ class shef_toolsaicrm
 		$request = Application::getInstance()->getContext()->getRequest();
 		if((int)$request->get('step') !== 2)
 		{
-			$this->ShowUninstallForm();
+			// Шаг 1 — форма «Сохранить данные» (unstep1.php, как в shef.toolsaimemory): пролог и эпилог
+			// вокруг неё выводит ядро, CMain::IncludeAdminFile() заканчивается die()
+			$this->application->IncludeAdminFile(
+				(string)Loc::getMessage('shef.toolsaicrm_MODULE_NAME'),
+				__DIR__.'/unstep1.php'
+			);
 
 			return;
 		}
@@ -514,15 +519,26 @@ class shef_toolsaicrm
 		return '<br><br>'.implode('<br>', $rows).'<br><br>'.Loc::getMessage('SH_TOOLSAICRM_SETUP_HINT');
 	}
 
-	/** Общая часть форм: ядро административной страницы. */
-	private function openAdminPage(): void
+	/**
+	 * Форма с итогом — как во всей линейке (канон — установщик shef.problems): глобальные, пролог,
+	 * сообщение, эпилог — в одном методе. Файлы ядра берут $USER, $APPLICATION, $adminPage… из
+	 * области, куда их подключили (epilog_admin_before.php: `$USER->IsAuthorized()`), — так же
+	 * делает CMain::IncludeAdminFile(). Заканчивается die(): прервать установку можно только так.
+	 * $message — доверенный HTML (тексты установщика; данные в нём — через htmlspecialcharsbx).
+	 */
+	private function ShowForm(string $type, string $message, string $buttonName = ''): void
 	{
 		/** @memo need for show title at prolog */
 		$keys = array_keys($GLOBALS);
 		for($i = 0; $i < count($keys); $i++)
 		{
+			// свои параметры и счётчики глобальной с тем же именем не перекрываем
 			if(
 				$keys[$i] != 'i'
+				&& $keys[$i] != 'keys'
+				&& $keys[$i] != 'type'
+				&& $keys[$i] != 'message'
+				&& $keys[$i] != 'buttonName'
 				&& $keys[$i] != 'GLOBALS'
 				&& $keys[$i] != 'strTitle'
 				&& $keys[$i] != 'filepath'
@@ -536,12 +552,6 @@ class shef_toolsaicrm
 		$this->application->SetTitle(Loc::getMessage('shef.toolsaicrm_MODULE_NAME'));
 
 		include(Application::getDocumentRoot().'/bitrix/modules/main/include/prolog_admin_after.php');
-	}
-
-	/** Форма с итогом. Заканчивается die(): прервать установку можно только так. */
-	private function ShowForm(string $type, string $message, string $buttonName = ''): void
-	{
-		$this->openAdminPage();
 
 		\CAdminMessage::ShowMessage([
 			'MESSAGE' => $message,
@@ -552,43 +562,7 @@ class shef_toolsaicrm
 		<form action="<?=$this->application->GetCurPage()?>" method="get">
 			<p>
 				<input type="hidden" name="lang" value="<?=LANG?>">
-				<input type="submit" value="<?=($buttonName <> '' ? $buttonName : Loc::getMessage('SH_MOD_BACK'))?>">
-			</p>
-		</form>
-		<?php
-		include(Application::getDocumentRoot().'/bitrix/modules/main/include/epilog_admin.php');
-		die();
-	}
-
-	/**
-	 * Форма удаления: что останется и что сломается (роботы БП), «сохранить данные» — отмечено.
-	 * Без отметки таблицы и настройки модуля удаляются: других копий истории оценок, профилей и
-	 * промптов нет.
-	 */
-	private function ShowUninstallForm(): void
-	{
-		$this->openAdminPage();
-
-		\CAdminMessage::ShowMessage([
-			'MESSAGE' => Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'),
-			'TYPE' => 'ERROR',
-			'HTML' => true,
-		]);
-		?>
-		<form action="<?=$this->application->GetCurPage()?>" method="get">
-			<?=bitrix_sessid_post()?>
-			<input type="hidden" name="lang" value="<?=LANG?>">
-			<input type="hidden" name="id" value="<?=htmlspecialcharsbx($this->MODULE_ID)?>">
-			<input type="hidden" name="uninstall" value="Y">
-			<input type="hidden" name="step" value="2">
-			<p>
-				<label>
-					<input type="checkbox" name="savedata" value="Y" checked>
-					<?=Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_SAVEDATA')?>
-				</label>
-			</p>
-			<p>
-				<input type="submit" value="<?=Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_BUTTON')?>">
+				<input type="submit" value="<?=htmlspecialcharsbx($buttonName <> '' ? $buttonName : (string)Loc::getMessage('SH_MOD_BACK'))?>">
 			</p>
 		</form>
 		<?php

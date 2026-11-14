@@ -1,6 +1,6 @@
 # Памятка агенту: shef.toolsaicrm
 
-> Последняя сверка: 2026-11-09
+> Последняя сверка: 2026-11-14
 
 Модуль коробочного Битрикс24 «Tools AI: автооценка CRM»: AI оценивает сделки, лиды и
 смарт-процессы — профили анализа, риск и вердикт, поля «AI: …», отметки, дела и
@@ -43,7 +43,7 @@ PR**, что и код.
 | шов к shef.toolsai: модель, расход, квота, лицензия | `lib/container.php`, `lib/core/model.php` (через `LlmService`), права — `lib/settings/sectionaccess.php` (через `AccessService`) |
 | настройки модуля | `lib/config.php`, `default_option.php`, `options_conf.php`, коды — `lib/main/constants.php` |
 | перенос данных из shef.toolsai, «Проверить и включить», доведение | `lib/main/migration.php` (+ `migrationport.php`, `coremigrationport.php`), `lib/main/setup.php`, `lib/main/maintenance.php`, агент — `lib/agent/maintenance.php` |
-| установщик и раскладка из git | `install/index.php`, `install/layout.php`, `install/version.php` |
+| установщик и раскладка из git | `install/index.php` (`ShowForm` — канон линейки), шаг удаления `install/unstep1.php`, `install/layout.php`, `install/version.php` |
 | заглушки страницы, компонента и робота БП | `lib/main/publicpage.php` |
 | страница модуля `/shef/toolsaicrm/`: разделы, права, форма, «?» | `settings/*` (`page.php`, `component.php`, `ajax.php`, разделы), `lib/settings/*`, `lib/ui/settingsform.*`, ответы — `settings/faqdata.php` |
 | статистика: анализ записей, оценка менеджеров | `settings/stats.php`, `lib/stats/*` |
@@ -54,6 +54,11 @@ PR**, что и код.
 
 ## Решения, которые не «упрощать»
 
+* **Страницы установщика — по канону линейки.** `ShowForm()` объявляет глобальные (кроме своих
+  параметров и счётчиков), подключает пролог, выводит сообщение и эпилог ядра в одном методе: эпилог
+  берёт `$USER` из области подключения (`epilog_admin_before.php`). Пролог и эпилог по разным методам
+  не разносить — так появилась ошибка #9. Форма удаления — шаг `install/unstep1.php` через
+  `CMain::IncludeAdminFile()`.
 * **Шов к shef.toolsai — только публичный API и разрешённые таблицы архива.** Модель и расход —
   `LlmService` (`completeJson`, `allow`, `model`), права — `AccessService::can`. Классов shef.toolsai
   в `lib/` нет; границу держит `tests/seam_test.php`. Сырые имена таблиц shef.toolsai встречаются
@@ -107,7 +112,7 @@ PR**, что и код.
 | `dealfields_test.php`, `entityfieldswrite_test.php`, `cardlayout_test.php`, `crmwrite_test.php` | поля «AI: …», отметки, карточка, запись в CRM и событие |
 | `callscript_test.php` | правила скриптов оценки звонков |
 | `model_test.php`, `seam_test.php` | шов к shef.toolsai: модель через `LlmService`, нет классов движка в коде |
-| `migration_test.php`, `setup_test.php`, `install_test.php`, `settings_agents_test.php` | перенос данных и сверка, «Проверить и включить», установщик, агенты по типам |
+| `migration_test.php`, `setup_test.php`, `install_test.php`, `installpage_test.php`, `settings_agents_test.php` | перенос данных и сверка, «Проверить и включить», установщик и его страницы (поведение: пролог и эпилог ядра видят глобальные), агенты по типам |
 | `publicpage_test.php`, `settings_sections_test.php`, `settings_faq_test.php`, `settings_optionsconf_test.php`, `settings_periodfilter_test.php`, `uiform_test.php`, `buildinfo_test.php` | страница модуля: разделы, права, «?», настройки, период отчётов |
 | `stats_test.php`, `lastchecks_test.php` | статистика, последние проверки |
 | `mcp_test.php`, `robot_test.php`, `rocketcards_test.php`, `viewevents_test.php`, `kbsources_test.php` | REST и MCP, робот БП, карточки «ракеты», события вида «AI», справка в «Базе знаний» |

@@ -16,4 +16,10 @@ final class Tai
 	{
 		return (string)file_get_contents(__DIR__.'/tai.css');
 	}
+
+	/** Содержимое hint.js для тега script: подсказка «?» на месте (toolsai#734), стили — в tai.css. */
+	public static function hintScript(): string
+	{
+		return (string)file_get_contents(__DIR__.'/hint.js');
+	}
 }

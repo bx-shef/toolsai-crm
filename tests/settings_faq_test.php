@@ -102,22 +102,34 @@ Check::group('значок «?» — статья «Вопросы и ответ
 Check::same('якорь ключа — без опасных символов', Faq::anchor('option.DEAL_enabled'), 'faq-option-DEAL_enabled');
 Check::same('пакет справки — этого модуля', KbLink::PACKAGE, 'shef.toolsaicrm:guide');
 
+// Нет shef.toolsaikb — значок с коротким ответом есть, «Подробнее» нет (toolsai#734, toolsai-crm#10)
 KbLink::setResolver(null);
-Check::same('нет shef.toolsaikb — значка «?» нет', Faq::icon('option.DEAL_enabled'), '');
+$bare = Faq::icon('option.DEAL_enabled');
+$enabled = Faq::get('option.DEAL_enabled');
+$attr = static fn(string $text): string => htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+Check::same('нет shef.toolsaikb — «?» есть: кнопка, название, «что это» и «зачем» из faqdata, без «Подробнее»', [
+	str_starts_with($bare, '<button type="button" class="shef-tai-q" aria-haspopup="dialog" aria-expanded="false"'),
+	str_contains($bare, 'data-hint-title="'.$attr($enabled['title']).'"'),
+	str_contains($bare, 'data-hint-what="'.$attr($enabled['what']).'"'),
+	str_contains($bare, 'data-hint-why="'.$attr($enabled['why']).'"'),
+	str_contains($bare, 'data-hint-more'),
+], [true, true, true, true, false]);
 Check::same('нет shef.toolsaikb — «Подробнее» простым текстом', [Faq::kbLink('/guide/engine', 'Как <это>'), Faq::kbUrl('/guide/engine'), KbLink::isAvailable()], ['Как &lt;это&gt;', null, false]);
+$moreOf = static fn(string $icon): array => [$icon !== '', str_contains($icon, 'data-hint-more')];
 KbLink::setResolver(static fn(string $path, ?string $heading): ?string => null);
-Check::same('нет документа — значка нет', Faq::icon('option.DEAL_enabled'), '');
+Check::same('нет документа — «?» есть, «Подробнее» нет', $moreOf(Faq::icon('option.DEAL_enabled')), [true, false]);
 KbLink::setResolver(static function(string $path, ?string $heading): ?string { throw new \RuntimeException('db'); });
-Check::same('сбой сервиса — значка нет, исключения нет', Faq::icon('option.DEAL_enabled'), '');
+Check::same('сбой сервиса — «?» есть, «Подробнее» нет, исключения нет', $moreOf(Faq::icon('option.DEAL_enabled')), [true, false]);
 $filtered = [];
-foreach(['//evil.example/x', "/\\evil.example", 'https://x', '/bitrix/admin/x', '/note/document/1/x', '/note/document/5/#a]b', '/note/document/5/#klyuch', '/note/document/5/'] as $candidate)
+foreach(['//evil.example/x', "/\\evil.example", 'https://x', '/bitrix/admin/x', '/note/document/1/x', '/note/document/5/#a]b', "/note/document/5/#klyuch\n", "/note/document/5/\n", '/note/document/5/#klyuch', '/note/document/5/'] as $candidate)
 {
 	KbLink::setResolver(static fn(string $path, ?string $heading): ?string => $candidate);
 	$filtered[$candidate] = KbLink::url('faq.md', 'x');
 }
 Check::same('адрес сервиса — только /note/document/<id>/ и якорь note', $filtered, [
 	'//evil.example/x' => null, "/\\evil.example" => null, 'https://x' => null, '/bitrix/admin/x' => null,
-	'/note/document/1/x' => null, '/note/document/5/#a]b' => null, '/note/document/5/#klyuch' => '/note/document/5/#klyuch', '/note/document/5/' => '/note/document/5/',
+	'/note/document/1/x' => null, '/note/document/5/#a]b' => null, "/note/document/5/#klyuch\n" => null, "/note/document/5/\n" => null,
+	'/note/document/5/#klyuch' => '/note/document/5/#klyuch', '/note/document/5/' => '/note/document/5/',
 ]);
 
 $calls = [];
@@ -127,11 +139,22 @@ KbLink::setResolver(static function(string $path, ?string $heading) use (&$calls
 	return '/note/document/'.($path === 'faq.md' ? 5 : 9).'/'.($heading !== null ? '#a'.count($calls) : '');
 });
 $icon = Faq::icon('option.DEAL_enabled');
-Check::same('«?» — статья faq.md и заголовок вопроса', [$calls[0] ?? null, str_contains($icon, 'href="/note/document/5/#a1"'), str_contains($icon, 'data-kb="/note/document/5/#a1"')], [['faq.md', 'Включить анализ'], true, true]);
-Check::same('подсказка «что это» — в title', str_contains($icon, 'title="Включить анализ: '), true);
+Check::same('«Подробнее» у «?» — статья faq.md и заголовок вопроса', [$calls[0] ?? null, str_contains($icon, 'data-hint-more="/note/document/5/#a1"')], [['faq.md', 'Включить анализ'], true]);
+Check::same('тексты подсказки — в атрибутах значка (на сенсорном экране title не виден), системного title нет', [str_contains($icon, 'data-hint-title="Включить анализ"'), str_contains($icon, 'data-hint-what="Главный выключатель'), str_contains($icon, 'data-hint-why="Анализ тратит'), str_contains($icon, ' title=')], [true, true, true, false]);
 Check::same('нет ответа — нет значка', Faq::icon('option.NOPE'), '');
 Faq::icon('option.DEAL_enabled');
 Check::same('ответ сервиса кешируется на запрос', count($calls), 1);
+$hintJs = (string)file_get_contents($root.'/lib/ui/hint.js');
+Check::same('страница модуля подключает подсказку «?» (hint.js), в файле нет закрывающего script', [str_contains((string)file_get_contents($root.'/settings/component.php'), 'Tai::hintScript()'), \Shef\ToolsAiCrm\Ui\Tai::hintScript() === $hintJs, $hintJs !== '' && stripos($hintJs, '</script') === false], [true, true, true]);
+Check::same('«Подробнее» подсказки — тот же a[data-kb], что у статьи справки; тексты подсказки — не innerHTML', [str_contains($hintJs, "'data-kb'"), str_contains($hintJs, 'innerHTML')], [true, false]);
+// Тексты ответа и адрес — в атрибуты только через экранирование (после проверок счётчика вызовов сервиса выше)
+KbLink::setResolver(null);
+$data = new \ReflectionProperty(Faq::class, 'data');
+$loaded = $data->getValue();
+$data->setValue(null, ['option.XSS' => ['section' => 'options', 'title' => 'A"><b>', 'what' => "x' onmouseover='1", 'why' => '<script>1</script>']]);
+$xss = Faq::icon('option.XSS');
+$data->setValue(null, $loaded);
+Check::same('атрибуты значка экранируются — кавычка и теги не выходят из атрибута', [str_contains($xss, '<b>'), str_contains($xss, '<script>'), str_contains($xss, "onmouseover='"), str_contains($xss, 'data-hint-title="A&quot;&gt;&lt;b&gt;"')], [false, false, false, true]);
 KbLink::setResolver(null);
 
 Check::group('заголовки вопросов');

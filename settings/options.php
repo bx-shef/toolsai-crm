@@ -107,11 +107,7 @@ if($request->getQuery('saved') === 'Y')
 }
 ?>
 <div class="shef-tai-section">
-<?php if(KbLink::isAvailable()): ?>
-<p class="shef-tai-page-desc"><?=$h('Главные настройки автоанализа CRM. У каждой настройки значок «?» — коротко, что это и зачем.')?> <?=$help('section.options')?></p>
-<?php else: ?>
-<p class="shef-tai-page-desc"><?=$h('Главные настройки автоанализа CRM. '.KbLink::INSTALL_HINT.'.')?></p>
-<?php endif; ?>
+<p class="shef-tai-page-desc"><?=$h('Главные настройки автоанализа CRM. У каждой настройки значок «?» — коротко, что это и зачем.')?> <?=$help('section.options')?><?php if(!KbLink::isAvailable()): ?> <?=$h(KbLink::INSTALL_HINT.'.')?><?php endif; ?></p>
 
 <?php
 // Поля — штатные ui.form-elements, как в настройках портала.

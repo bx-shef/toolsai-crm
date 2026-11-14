@@ -52,8 +52,8 @@ $withPh = SettingsForm::withPlaceholders($form, ['DEF_url' => 'сейчас: htt
 Check::same('#294: серый текст — текстовым и числовым полям, прочим нет', array_column($withPh[0]['fields'], 'placeholder', 'name'), ['param_DEF_quota' => 'сейчас: 5', 'param_DEF_url' => 'сейчас: https://a.by']);
 Check::same('#294: JS отдаёт его полю ввода', str_contains(SettingsForm::script(), "input.placeholder = field.placeholder || ''"), true);
 Check::same('#292: без значка — пусто', $form[0]['fields'][2]['hintIcon'], '');
-$withIcon = SettingsForm::fromTabs([$tab], static fn(string $code): string => '', static fn(string $code): string => 'x', static fn(string $code): string => $code === 'DEF_quota' ? '<a class="shef-tai-q">?</a>' : '');
-Check::same('#292: значок «?» — HTML ссылки по полному коду', [$withIcon[0]['fields'][2]['hintIcon'], $withIcon[0]['fields'][5]['hintIcon']], ['<a class="shef-tai-q">?</a>', '']);
+$withIcon = SettingsForm::fromTabs([$tab], static fn(string $code): string => '', static fn(string $code): string => 'x', static fn(string $code): string => $code === 'DEF_quota' ? '<button type="button" class="shef-tai-q">?</button>' : '');
+Check::same('значок «?» — готовый HTML кнопки по полному коду', [$withIcon[0]['fields'][2]['hintIcon'], $withIcon[0]['fields'][5]['hintIcon']], ['<button type="button" class="shef-tai-q">?</button>', '']);
 Check::same('#292: JS ставит значок ссылкой, а не «?» текстом', str_contains(SettingsForm::script(), "htmlNode('shef-ui-row__q', field.hintIcon)"), true);
 
 Check::group('описания');

@@ -35,7 +35,7 @@ final class SettingsForm
 	 * @param callable(string): string $value значение настройки по полному коду (ВКЛАДКА_код)
 	 * @param callable(string): string $hint подсказка «что это» по полному коду; пусто — нет
 	 * @param callable(string): string|null $hintIcon значок «?» перед подсказкой — готовый HTML
-	 *        ссылки на ответ (Settings\Faq::icon(), #292); пусто — значка-ссылки нет
+	 *        кнопки подсказки на месте (Settings\Faq::icon()); пусто — значка нет
 	 * @return list<array{id: string, title: string, description: string, fields: list<array<string, mixed>>}>
 	 */
 	public static function fromTabs(iterable $tabs, callable $value, ?callable $hint = null, ?callable $hintIcon = null): array

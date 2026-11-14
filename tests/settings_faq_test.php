@@ -121,14 +121,15 @@ Check::same('нет документа — «?» есть, «Подробнее�
 KbLink::setResolver(static function(string $path, ?string $heading): ?string { throw new \RuntimeException('db'); });
 Check::same('сбой сервиса — «?» есть, «Подробнее» нет, исключения нет', $moreOf(Faq::icon('option.DEAL_enabled')), [true, false]);
 $filtered = [];
-foreach(['//evil.example/x', "/\\evil.example", 'https://x', '/bitrix/admin/x', '/note/document/1/x', '/note/document/5/#a]b', '/note/document/5/#klyuch', '/note/document/5/'] as $candidate)
+foreach(['//evil.example/x', "/\\evil.example", 'https://x', '/bitrix/admin/x', '/note/document/1/x', '/note/document/5/#a]b', "/note/document/5/#klyuch\n", "/note/document/5/\n", '/note/document/5/#klyuch', '/note/document/5/'] as $candidate)
 {
 	KbLink::setResolver(static fn(string $path, ?string $heading): ?string => $candidate);
 	$filtered[$candidate] = KbLink::url('faq.md', 'x');
 }
 Check::same('адрес сервиса — только /note/document/<id>/ и якорь note', $filtered, [
 	'//evil.example/x' => null, "/\\evil.example" => null, 'https://x' => null, '/bitrix/admin/x' => null,
-	'/note/document/1/x' => null, '/note/document/5/#a]b' => null, '/note/document/5/#klyuch' => '/note/document/5/#klyuch', '/note/document/5/' => '/note/document/5/',
+	'/note/document/1/x' => null, '/note/document/5/#a]b' => null, "/note/document/5/#klyuch\n" => null, "/note/document/5/\n" => null,
+	'/note/document/5/#klyuch' => '/note/document/5/#klyuch', '/note/document/5/' => '/note/document/5/',
 ]);
 
 $calls = [];

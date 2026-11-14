@@ -43,7 +43,7 @@ PR**, что и код.
 | шов к shef.toolsai: модель, расход, квота, лицензия | `lib/container.php`, `lib/core/model.php` (через `LlmService`), права — `lib/settings/sectionaccess.php` (через `AccessService`) |
 | настройки модуля | `lib/config.php`, `default_option.php`, `options_conf.php`, коды — `lib/main/constants.php` |
 | перенос данных из shef.toolsai, «Проверить и включить», доведение | `lib/main/migration.php` (+ `migrationport.php`, `coremigrationport.php`), `lib/main/setup.php`, `lib/main/maintenance.php`, агент — `lib/agent/maintenance.php` |
-| установщик и раскладка из git | `install/index.php`, `install/layout.php`, `install/version.php` |
+| установщик и раскладка из git | `install/index.php` (`ShowForm` — канон линейки), шаг удаления `install/unstep1.php`, `install/layout.php`, `install/version.php` |
 | заглушки страницы, компонента и робота БП | `lib/main/publicpage.php` |
 | страница модуля `/shef/toolsaicrm/`: разделы, права, форма, «?» | `settings/*` (`page.php`, `component.php`, `ajax.php`, разделы), `lib/settings/*`, `lib/ui/settingsform.*`, ответы — `settings/faqdata.php` |
 | статистика: анализ записей, оценка менеджеров | `settings/stats.php`, `lib/stats/*` |

@@ -45,7 +45,7 @@ PR**, что и код.
 | перенос данных из shef.toolsai, «Проверить и включить», доведение | `lib/main/migration.php` (+ `migrationport.php`, `coremigrationport.php`), `lib/main/setup.php`, `lib/main/maintenance.php`, агент — `lib/agent/maintenance.php` |
 | установщик и раскладка из git | `install/index.php` (`ShowForm` — канон линейки), шаг удаления `install/unstep1.php`, `install/layout.php`, `install/version.php` |
 | заглушки страницы, компонента и робота БП | `lib/main/publicpage.php` |
-| страница модуля `/shef/toolsaicrm/`: разделы, права, форма, «?» | `settings/*` (`page.php`, `component.php`, `ajax.php`, разделы), `lib/settings/*`, `lib/ui/settingsform.*`, ответы — `settings/faqdata.php` |
+| страница модуля `/shef/toolsaicrm/`: разделы, права, форма, «?» | `settings/*` (`page.php`, `component.php`, `ajax.php`, разделы), `lib/settings/*`, `lib/ui/settingsform.*`, подсказка «?» на месте — `lib/ui/hint.js` (копия эталона shef.toolsai) и блок «Подсказка «?»» в `lib/ui/tai.css`, ответы — `settings/faqdata.php` |
 | статистика: анализ записей, оценка менеджеров | `settings/stats.php`, `lib/stats/*` |
 | робот БП «AI: оценить сейчас» | `activities/analyze/shtoolsaianalyzeactivity.php`, запуск — `lib/robot/analyzenow.php` |
 | REST и MCP (область `shef_toolsaicrm`) | `lib/integration/rest/service.php`, манифест и счёт — `lib/rest/mcptools.php` |
@@ -114,6 +114,7 @@ PR**, что и код.
 | `model_test.php`, `seam_test.php` | шов к shef.toolsai: модель через `LlmService`, нет классов движка в коде |
 | `migration_test.php`, `setup_test.php`, `install_test.php`, `installpage_test.php`, `settings_agents_test.php` | перенос данных и сверка, «Проверить и включить», установщик и его страницы (поведение: пролог и эпилог ядра видят глобальные), агенты по типам |
 | `publicpage_test.php`, `settings_sections_test.php`, `settings_faq_test.php`, `settings_optionsconf_test.php`, `settings_periodfilter_test.php`, `uiform_test.php`, `buildinfo_test.php` | страница модуля: разделы, права, «?», настройки, период отчётов |
+| `hint_test.mjs` | подсказка «?» (`lib/ui/hint.js`, копия эталона shef.toolsai; сверка — `tools/hint-sync.sh` там): шторка на узком экране и подсказка у значка на широком, закрытие (кнопка, затемнение, Esc, свайп), фокус, `aria-expanded`, адрес «Подробнее» — только свой портал; DOM — подделка внутри теста |
 | `stats_test.php`, `lastchecks_test.php` | статистика, последние проверки |
 | `mcp_test.php`, `robot_test.php`, `rocketcards_test.php`, `viewevents_test.php`, `kbsources_test.php` | REST и MCP, робот БП, карточки «ракеты», события вида «AI», справка в «Базе знаний» |
 | `docs_test.php`, `docs_public_test.php`, `kb_test.php` | ссылки и классы в документации, публичное не смешано с внутренним, пакет `kb/guide` собран и совпадает с faqdata |

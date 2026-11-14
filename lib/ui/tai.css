@@ -7,7 +7,7 @@
    в разметке экранов цветов нет (проверяет tests/taistyle_test.php). */
 
 /* region Токены ////// */
-.shef-tai, .shef-tai-view, .shef-tai-hub, .shef-ui-scope {
+.shef-tai, .shef-tai-view, .shef-tai-hub, .shef-ui-scope, .shef-hint {
 	--tai-iris: linear-gradient(90deg, #6E5BFF, #3FA9FF, #7CFFE4);
 	--tai-iris-tint: linear-gradient(100deg, #F0EDFF, #EAF5FF 55%, #EAFFF9);
 	--tai-iris-fill: linear-gradient(135deg, #4B3CD0 0%, #1F6FC8 55%, #137A78 100%);
@@ -39,7 +39,7 @@
 	--tai-focus-ring: 0 0 0 2px var(--tai-surface), 0 0 0 4px var(--tai-focus);
 	color: var(--tai-text);
 }
-.bitrix24-dark-theme .shef-tai, .bitrix24-dark-theme .shef-tai-view, .bitrix24-dark-theme .shef-tai-hub, .bitrix24-dark-theme .shef-ui-scope {
+.bitrix24-dark-theme .shef-tai, .bitrix24-dark-theme .shef-tai-view, .bitrix24-dark-theme .shef-tai-hub, .bitrix24-dark-theme .shef-ui-scope, .bitrix24-dark-theme .shef-hint {
 	--tai-iris-tint: linear-gradient(100deg, rgba(110, 91, 255, .18), rgba(63, 169, 255, .18) 55%, rgba(124, 255, 228, .14));
 	--tai-surface: #1C1B24;
 	--tai-surface-2: #24232E;
@@ -120,9 +120,36 @@
 .shef-tai-l { width: 40%; }
 .shef-tai-options td small { color: var(--tai-text-3); }
 .shef-tai-q-cell { width: 24px; }
-/* Подсказка «?» */
-.shef-tai-q { display: inline-block; width: 18px; height: 18px; line-height: 18px; border-radius: 50%; background: var(--tai-accent-soft); color: var(--tai-accent-on-soft); text-align: center; font-size: var(--tai-fs-12); font-weight: var(--tai-fw-semibold); text-decoration: none; vertical-align: middle; }
-.shef-tai a.shef-tai-q:hover { background: var(--tai-accent); color: var(--tai-surface); }
+/* region Подсказка «?» (hint.js) — на месте, не уводя со страницы (toolsai#734): значок — кнопка, подсказка — lib/ui/hint.js.
+   Эталон блока — shef.toolsai, у соседей линейки копия до метки endregion (сверка — tools/hint-sync.sh). */
+.shef-tai-q { position: relative; display: inline-block; box-sizing: border-box; width: 18px; height: 18px; margin: 0; padding: 0; border: 0; border-radius: 50%; background: var(--tai-accent-soft); color: var(--tai-accent-on-soft); font: inherit; font-size: var(--tai-fs-12); font-weight: var(--tai-fw-semibold); line-height: 18px; text-align: center; text-decoration: none; vertical-align: middle; cursor: pointer; -webkit-appearance: none; appearance: none; }
+.shef-tai-q:hover, .shef-tai-q[aria-expanded="true"] { background: var(--tai-accent); color: var(--tai-surface); }
+.shef-tai-q:focus-visible { outline: none; box-shadow: var(--tai-focus-ring); }
+@media (pointer: coarse) { .shef-tai-q::after { content: ""; position: absolute; top: -8px; right: -8px; bottom: -8px; left: -8px; } }
+.shef-hint { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 100000; }
+.shef-hint__dim { position: absolute; top: 0; right: 0; bottom: 0; left: 0; touch-action: none; }
+.shef-hint.--sheet .shef-hint__dim { background: rgba(20, 18, 32, .5); }
+.shef-hint__box { position: absolute; display: flex; flex-direction: column; box-sizing: border-box; width: 340px; max-width: calc(100vw - 24px); max-height: min(70vh, 420px); background: var(--tai-surface); color: var(--tai-text); border: 1px solid var(--tai-border); border-radius: var(--tai-r-lg); box-shadow: 0 12px 32px -10px rgba(31, 31, 35, .35); outline: none; }
+.shef-hint__body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: var(--tai-sp-8) var(--tai-sp-8) var(--tai-sp-4); }
+.shef-hint__grip { display: none; width: 40px; height: 4px; margin: -4px auto 12px; border-radius: var(--tai-r-pill); background: var(--tai-border-strong); opacity: .45; }
+.shef-hint__title { margin: 0 0 var(--tai-sp-4); font-size: var(--tai-fs-17); font-weight: var(--tai-fw-semibold); line-height: 22px; color: var(--tai-text); }
+.shef-hint__text { margin: 0 0 var(--tai-sp-4); font-size: var(--tai-fs-14); line-height: 20px; color: var(--tai-text-2); }
+.shef-hint__text.--why { color: var(--tai-text-3); }
+.shef-hint__foot { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--tai-sp-6); padding: var(--tai-sp-4) var(--tai-sp-8) var(--tai-sp-8); }
+.shef-hint__more { font-size: var(--tai-fs-13); color: var(--tai-accent); text-decoration: none; }
+.shef-hint__more:hover { text-decoration: underline; }
+.shef-hint__ok { min-height: var(--tai-h-control-sm); padding: 0 var(--tai-sp-9); border: 0; border-radius: var(--tai-r-sm); background: var(--tai-accent); color: var(--tai-surface); font: inherit; font-size: var(--tai-fs-14); font-weight: var(--tai-fw-medium); cursor: pointer; }
+.shef-hint__ok:hover { background: var(--tai-accent-hover); }
+.shef-hint__more:focus-visible, .shef-hint__ok:focus-visible { outline: none; box-shadow: var(--tai-focus-ring); }
+.shef-hint.--sheet .shef-hint__box { right: 0; bottom: 0; left: 0; width: auto; max-width: none; max-height: 80vh; border: 0; border-radius: var(--tai-r-lg) var(--tai-r-lg) 0 0; box-shadow: none; animation: shef-hint-rise .2s ease-out; }
+.shef-hint.--sheet .shef-hint__grip { display: block; }
+.shef-hint.--sheet .shef-hint__foot { flex-direction: column; align-items: stretch; padding-bottom: calc(var(--tai-sp-8) + env(safe-area-inset-bottom, 0px)); }
+.shef-hint.--sheet .shef-hint__ok { min-height: var(--tai-h-control); width: 100%; }
+.shef-hint.--sheet .shef-hint__more { padding: var(--tai-sp-4) 0; text-align: center; }
+@keyframes shef-hint-rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .shef-hint.--sheet .shef-hint__box { animation: none; } }
+/* endregion Подсказка «?» (hint.js) */
+
 .shef-tai-faq-item { padding: var(--tai-sp-4) var(--tai-sp-6); margin: 0 0 var(--tai-sp-4); border-left: 3px solid var(--tai-border); max-width: 900px; }
 .shef-tai-faq-item p { margin: 4px 0; }
 .shef-tai-faq-active { border-left-color: var(--tai-accent); background: var(--tai-accent-soft); }

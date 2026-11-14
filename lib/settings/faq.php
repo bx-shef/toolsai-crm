@@ -162,7 +162,7 @@ final class Faq
 	}
 
 	/**
-	 * Ссылка на статью справки: открывает узкий слайдер, что и «?» (data-kb).
+	 * Ссылка на статью справки: открывает узкий слайдер, как «Подробнее» в подсказке «?» (data-kb).
 	 * $doc — '/guide/slug#якорь'; адреса нет — просто текст.
 	 */
 	public static function kbLink(string $doc, string $text): string
@@ -178,24 +178,29 @@ final class Faq
 	}
 
 	/**
-	 * Значок «?» рядом с настройкой: подсказка «что это» при наведении,
-	 * щелчок — узкий слайдер с ответом в «Базе знаний». Нет ответа, модуля
-	 * «[SH] AI база знаний» или статьи — пусто: лучше без значка, чем значок
-	 * в никуда.
+	 * Значок «?» рядом с настройкой (toolsai#734, bx-shef/toolsai-crm#10): кнопка, по щелчку, касанию,
+	 * Enter и Пробелу на месте показывается подсказка — заголовок, «что это» и «зачем» (lib/ui/hint.js,
+	 * шторка снизу на узком экране, у значка на широком). Тексты — из faqdata.php, копий нет.
+	 * «Подробнее» — ссылка на ответ в «Базе знаний» (data-hint-more) — только когда есть модуль
+	 * «[SH] AI база знаний» и статья; значок от них не зависит. Нет ответа — пусто.
 	 */
 	public static function icon(string $key): string
 	{
 		$item = static::get($key);
-		$url = $item !== null ? static::kbAnswer($key) : null;
-		if($url === null)
+		if($item === null)
 		{
 			return '';
 		}
 
 		$e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+		$more = static::kbAnswer($key);
 
-		return '<a class="shef-tai-q" href="'.$e($url).'" target="_blank" data-kb="'.$e($url).'"'
-			.' title="'.$e($item['title'].': '.$item['what']).'"'
-			.' aria-label="'.$e('Что это: '.$item['title']).'">?</a>';
+		return '<button type="button" class="shef-tai-q" aria-haspopup="dialog" aria-expanded="false"'
+			.' aria-label="'.$e('Что это: '.$item['title']).'"'
+			.' data-hint-title="'.$e($item['title']).'"'
+			.' data-hint-what="'.$e($item['what']).'"'
+			.' data-hint-why="'.$e((string)($item['why'] ?? '')).'"'
+			.($more !== null ? ' data-hint-more="'.$e($more).'"' : '')
+			.'>?</button>';
 	}
 }

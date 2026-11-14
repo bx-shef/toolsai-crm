@@ -239,6 +239,7 @@ else (static function(string $__file, array $__vars): void
 })();
 </script>
 <script><?php readfile(__DIR__.'/kbslider.js'); readfile(__DIR__.'/confirm.js'); ?></script>
+<script><?= Tai::hintScript() ?></script>
 <script>
 // «?» и «Подробнее» — статья справки «Базы знаний 2.0» (Settings\KbLink) в узком
 // слайдере поверх портала, с прокруткой к якорю (settings/kbslider.js).

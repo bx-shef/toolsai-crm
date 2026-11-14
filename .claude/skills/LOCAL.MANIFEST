@@ -3,10 +3,10 @@
 # Правят их здесь. sync.sh --to их не трогает, --check сверяет с диском.
 # Пересобрать: .claude/skills/sync.sh --local
 #
-564e6037129bcf626fa783dcb26f7933e9884ee6545ca9da6c5a6f6a3a78cf1c  README.md
-dc5c2c14d80085ad1db7385707d0561f2cf1cdddb9b4640bf94fbccede80ddb3  SOURCE
+ae832c7d491d0d2a7304a75f9ae6ac43c966e38bec80695f011c30b6f8b65bb4  README.md
+1d5cdf8adef7eba1cb4b7bc37af361f83ee35666d861eaadf7aef51b6cb8c5bd  SOURCE
 387a987ab63f6bdc8797f65a4251c0b9119568fff476d64bbda429aab15426d3  merge-pr/SKILL.md
 b0cc7f928149bc5fb312f2214514f8a10b736926e3132180bc19947e696fe829  merge-pr/evals/selection.json
-8094335fe85c39814adf8034da529ef272f2218978054bc96fbd17bccf3dff66  review-panel/SKILL.md
+12bc3a6641e12e89f50cd061e72dd94e2c51074f8c61508b6aceabdb895a641a  review-panel/SKILL.md
 5e6dbf515b662e32d8ea08c04e4e18db009a89775f97f61f6578ff48b9c7dd3c  review-panel/evals/selection.json
 1415b9faa12293ad2fe153ccc011f6a122e0c9b70c25d8b36991a7af1689198d  update.sh

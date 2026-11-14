@@ -15,6 +15,8 @@
  * * удаление: с savedata таблицы и настройки остаются, без него — уходят; поля «AI: …» и их тип
  *   не удаляются; предупреждение про роботов БП в тексте формы;
  * * все коды языковых сообщений установщика есть в lang/ru/install/index.php.
+ * * страницы установщика: пролог и эпилог ядра подключаются только в showAdminPage, после объявления
+ *   всех глобальных — эпилогу нужен $USER (toolsai-crm#9).
  *
  * Ядро подменяется заглушками, установщик подключается настоящий.
  */
@@ -114,6 +116,15 @@ $body = $m[1] ?? '';
 Check::same('requirementError раньше InstallDB', strpos($body, 'requirementError()') < strpos($body, '$this->InstallDB()'), true);
 Check::same('после отказа — return, дальше не идём', preg_match('/ShowForm\(\'ERROR\', \$error\);\s*return;/', $body), 1);
 Check::same('порядок: таблицы, подписки, файлы, перенос', [strpos($body, 'InstallDB()') < strpos($body, 'InstallEvents()'), strpos($body, 'InstallEvents()') < strpos($body, 'InstallFiles()'), strpos($body, 'InstallFiles()') < strpos($body, 'InstallEngine()')], [true, true, true]);
+
+Check::group('Страницы установщика: пролог и эпилог ядра — в одной области с глобальными (#9)');
+preg_match('/private function showAdminPage\(\\\\Closure \$content\): void\s*\{(.*?)\n\t\}\n/s', $source, $m);
+$page = $m[1] ?? '';
+Check::same('showAdminPage есть', $page !== '', true);
+Check::same('пролог и эпилог ядра — по одному подключению, оба в showAdminPage', [substr_count($source, "/bitrix/modules/main/include/prolog_admin_after.php'"), substr_count($source, "/bitrix/modules/main/include/epilog_admin.php'"), substr_count($page, 'prolog_admin_after.php'), substr_count($page, 'epilog_admin.php')], [1, 1, 1, 1]);
+Check::same('порядок: глобальные, пролог, содержимое, эпилог, die()', preg_match('/global \$\{\$key\};.*prolog_admin_after\.php.*\$content\(\);.*epilog_admin\.php.*die\(\);/s', $page), 1);
+Check::same('параметр $content не перекрыт глобальной с тем же именем', str_contains($page, "'content'"), true);
+Check::same('формы установки и удаления — через showAdminPage', [preg_match('/private function ShowForm\(.*?\{\s*\$this->showAdminPage\(/s', $source), preg_match('/private function ShowUninstallForm\(\): void\s*\{\s*\$this->showAdminPage\(/s', $source)], [1, 1]);
 
 Check::group('requireModules');
 Check::same('shef.options, shef.problems, shef.toolsai', $settings['requireModules']['value'], ['shef.options', 'shef.problems', 'shef.toolsai']);

@@ -250,8 +250,8 @@ Loader::$missing = [];
 
 // region Maintenance ////
 Check::group('Maintenance: отметка файлов');
-Check::same('версия из version.php', Maintenance::fileVersion($root), '1.0.0');
-Check::same('отметка — версия и хеш .settings.php', preg_match('/^1\.0\.0\|[0-9a-f]{12}$/', Maintenance::stamp($root)), 1);
+Check::same('версия из version.php', Maintenance::fileVersion($root), '1.0.1');
+Check::same('отметка — версия и хеш .settings.php', preg_match('/^1\.0\.1\|[0-9a-f]{12}$/', Maintenance::stamp($root)), 1);
 Check::same('нужно, пока отметка не та', [Maintenance::isNeeded('', 'a|b'), Maintenance::isNeeded('a|b', 'a|b'), Maintenance::isNeeded('a|b', '')], [true, false, false]);
 Check::same('имя и интервал агента доведения', [Maintenance::AGENT_NAME, Maintenance::AGENT_INTERVAL], ['\\Shef\\ToolsAiCrm\\Agent\\Maintenance::run();', 600]);
 

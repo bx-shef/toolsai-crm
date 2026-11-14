@@ -514,50 +514,49 @@ class shef_toolsaicrm
 		return '<br><br>'.implode('<br>', $rows).'<br><br>'.Loc::getMessage('SH_TOOLSAICRM_SETUP_HINT');
 	}
 
-	/** Общая часть форм: ядро административной страницы. */
-	private function openAdminPage(): void
+	/**
+	 * Административная страница установщика: пролог, содержимое, эпилог — в одной области.
+	 * Файлы ядра берут $USER, $APPLICATION, $adminPage… из области, куда их подключили
+	 * (epilog_admin_before.php: `$USER->IsAuthorized()`), поэтому все глобальные объявлены здесь,
+	 * как в CMain::IncludeAdminFile(). Пролог и эпилог подключаются только этим методом
+	 * (держит tests/install_test.php). Заканчивается die(): прервать установку можно только так.
+	 */
+	private function showAdminPage(\Closure $content): void
 	{
-		/** @memo need for show title at prolog */
-		$keys = array_keys($GLOBALS);
-		for($i = 0; $i < count($keys); $i++)
+		foreach(array_keys($GLOBALS) as $key)
 		{
-			if(
-				$keys[$i] != 'i'
-				&& $keys[$i] != 'GLOBALS'
-				&& $keys[$i] != 'strTitle'
-				&& $keys[$i] != 'filepath'
-			)
+			if(!in_array($key, ['GLOBALS', 'this', 'key', 'content'], true))
 			{
-				global ${$keys[$i]};
+				global ${$key};
 			}
 		}
-		global $APPLICATION, $adminPage, $adminMenu, $adminChain, $USER;
 
 		$this->application->SetTitle(Loc::getMessage('shef.toolsaicrm_MODULE_NAME'));
 
 		include(Application::getDocumentRoot().'/bitrix/modules/main/include/prolog_admin_after.php');
+		$content();
+		include(Application::getDocumentRoot().'/bitrix/modules/main/include/epilog_admin.php');
+		die();
 	}
 
 	/** Форма с итогом. Заканчивается die(): прервать установку можно только так. */
 	private function ShowForm(string $type, string $message, string $buttonName = ''): void
 	{
-		$this->openAdminPage();
-
-		\CAdminMessage::ShowMessage([
-			'MESSAGE' => $message,
-			'TYPE' => $type,
-			'HTML' => true,
-		]);
-		?>
-		<form action="<?=$this->application->GetCurPage()?>" method="get">
-			<p>
-				<input type="hidden" name="lang" value="<?=LANG?>">
-				<input type="submit" value="<?=($buttonName <> '' ? $buttonName : Loc::getMessage('SH_MOD_BACK'))?>">
-			</p>
-		</form>
-		<?php
-		include(Application::getDocumentRoot().'/bitrix/modules/main/include/epilog_admin.php');
-		die();
+		$this->showAdminPage(function() use ($type, $message, $buttonName): void {
+			\CAdminMessage::ShowMessage([
+				'MESSAGE' => $message,
+				'TYPE' => $type,
+				'HTML' => true,
+			]);
+			?>
+			<form action="<?=$this->application->GetCurPage()?>" method="get">
+				<p>
+					<input type="hidden" name="lang" value="<?=LANG?>">
+					<input type="submit" value="<?=($buttonName <> '' ? $buttonName : Loc::getMessage('SH_MOD_BACK'))?>">
+				</p>
+			</form>
+			<?php
+		});
 	}
 
 	/**
@@ -567,33 +566,31 @@ class shef_toolsaicrm
 	 */
 	private function ShowUninstallForm(): void
 	{
-		$this->openAdminPage();
-
-		\CAdminMessage::ShowMessage([
-			'MESSAGE' => Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'),
-			'TYPE' => 'ERROR',
-			'HTML' => true,
-		]);
-		?>
-		<form action="<?=$this->application->GetCurPage()?>" method="get">
-			<?=bitrix_sessid_post()?>
-			<input type="hidden" name="lang" value="<?=LANG?>">
-			<input type="hidden" name="id" value="<?=htmlspecialcharsbx($this->MODULE_ID)?>">
-			<input type="hidden" name="uninstall" value="Y">
-			<input type="hidden" name="step" value="2">
-			<p>
-				<label>
-					<input type="checkbox" name="savedata" value="Y" checked>
-					<?=Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_SAVEDATA')?>
-				</label>
-			</p>
-			<p>
-				<input type="submit" value="<?=Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_BUTTON')?>">
-			</p>
-		</form>
-		<?php
-		include(Application::getDocumentRoot().'/bitrix/modules/main/include/epilog_admin.php');
-		die();
+		$this->showAdminPage(function(): void {
+			\CAdminMessage::ShowMessage([
+				'MESSAGE' => Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_WARN'),
+				'TYPE' => 'ERROR',
+				'HTML' => true,
+			]);
+			?>
+			<form action="<?=$this->application->GetCurPage()?>" method="get">
+				<?=bitrix_sessid_post()?>
+				<input type="hidden" name="lang" value="<?=LANG?>">
+				<input type="hidden" name="id" value="<?=htmlspecialcharsbx($this->MODULE_ID)?>">
+				<input type="hidden" name="uninstall" value="Y">
+				<input type="hidden" name="step" value="2">
+				<p>
+					<label>
+						<input type="checkbox" name="savedata" value="Y" checked>
+						<?=Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_SAVEDATA')?>
+					</label>
+				</p>
+				<p>
+					<input type="submit" value="<?=Loc::getMessage('SH_TOOLSAICRM_UNINSTALL_BUTTON')?>">
+				</p>
+			</form>
+			<?php
+		});
 	}
 	// endregion ////
 

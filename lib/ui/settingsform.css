@@ -100,3 +100,7 @@
 	.shef-ui-row__label { flex-basis: auto; min-height: 0; }
 	.shef-ui-row .ui-ctl.shef-ui-row__select { max-width: none; }
 }
+
+/* Облачко подсказки ядра (ui.hint): ширина по содержимому, не больше 300 px, перенос строк */
+.ui-hint-popup{width:max-content;max-width:300px}
+.ui-hint-popup .ui-hint-content{max-width:300px;overflow-wrap:anywhere}

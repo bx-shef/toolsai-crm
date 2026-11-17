@@ -122,5 +122,6 @@ Check::same('кривой класс иконки — шестерёнка', Set
 Check::same('стиль карточек на месте', str_contains(SettingsForm::style(), '.shef-ui-card__head'), true);
 Check::same('штатных ui.section и ui.form-elements больше не грузим', array_values(array_intersect(SettingsForm::extensions(), ['ui.section', 'ui.form-elements.view'])), []);
 Check::same('JS формы на месте', str_contains(SettingsForm::script(), 'window.ShefUiSettingsForm'), true);
+Check::same('подсказка поля — облачко ядра (data-hint, ui.hint), а не серый title', [str_contains(SettingsForm::script(), "setAttribute('data-hint', field.hint)"), str_contains(SettingsForm::script(), 'label.title'), in_array('ui.hint', SettingsForm::extensions(), true)], [true, false, true]);
 
 Check::finish();
